@@ -1,0 +1,176 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  For more information on how to configure your ASP.NET application, please visit
+  http://go.microsoft.com/fwlink/?LinkId=301879
+  -->
+<configuration>
+  <configSections>
+    <!-- For more information on Entity Framework configuration, visit http://go.microsoft.com/fwlink/?LinkID=237468 -->
+    <section name="entityFramework" type="System.Data.Entity.Internal.ConfigFile.EntityFrameworkSection, EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" requirePermission="false" />
+    <section name="log4net" type="System.Configuration.IgnoreSectionHandler" />
+  </configSections>
+  <connectionStrings>
+    <add name="WebApiDbContext" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=Corsan_Logistics_Live;User ID=sa;Password=B1Admin" />
+    <add name="ProdumexConnectionString" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=PMX_Corsan_Logistics_Live;User ID=sa;Password=B1Admin" />
+    <add name="Trison" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=CORTRI_2019;User ID=sa;Password=B1Admin" />
+    <add name="TrisonPMX" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=PMX_CORTRI_PROD;User ID=sa;Password=B1Admin" />
+    <add name="CorsanLogistics" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=Corsan_Logistics_Live;User ID=sa;Password=B1Admin" />
+    <add name="CorLogPMX" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=PMX_Corsan_Logistics_Live;User ID=sa;Password=B1Admin" />
+    <add name="TestCorLog3" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=zzCorLog_Test;User ID=sa;Password=B1Admin" />
+    <add name="TestCorLogPMX3" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=PMX_zzCorLog_Test;User ID=sa;Password=B1Admin" />
+    <add name="TestCorLog" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=Test_CorLog_EDI;User ID=sa;Password=B1Admin" />
+    <add name="TestCorLogPMX" providerName="System.Data.SqlClient" connectionString="Data Source=localhost;Integrated Security=False;Initial Catalog=PMX_Test_CorLog_EDI;User ID=sa;Password=B1Admin" />
+  </connectionStrings>
+  <appSettings>
+    <add key="MasterUserName" value="user1" />
+    <add key="MasterPassword" value="password1" />
+    <add key="PreProcess856Record-C001000" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-C001000" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-ACE" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-ACE" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-Lowes" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-Lowes" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856PRecord-Lowes" value="Infocus.WebApi.Common.BasePreProcess856PRecord, Infocus.WebApi.Common"/>
+    <add key="PostProcess856PRecord-Lowes" value="Infocus.WebApi.Common.ProdumexPostProcess856Pack, Infocus.WebApi.Common"/>
+    <add key="PreProcess856Record-Lowes Stock" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-Lowes Stock" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-TSC" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-TSC" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-HOMEDEPOT" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-HOMEDEPOT" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-WAYFAIR" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-WAYFAIR" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-3PL-C0006" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-3PL-C0006" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-TeeZedT" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-TeeZedT" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+    <add key="PreProcess856Record-3PL-C0018" value="Infocus.WebApi.Common.BasePreProcess856Record, Infocus.WebApi.Common" />
+    <add key="PostProcess856Record-3PL-C0018" value="Infocus.WebApi.Common.ProdumexPostProcess856Record, Infocus.WebApi.Common" />
+  </appSettings>
+  <!--
+    For a description of web.config changes see http://go.microsoft.com/fwlink/?LinkId=235367.
+
+    The following attributes can be set on the <httpRuntime> tag.
+      <system.Web>
+        <httpRuntime targetFramework="4.6" />
+      </system.Web>
+  -->
+  <system.web>
+    <authentication mode="None" />
+    <compilation targetFramework="4.6.1" debug="true" />
+    <httpRuntime targetFramework="4.6" />
+  </system.web>
+  <system.webServer>
+    <modules>
+      <remove name="FormsAuthentication" />
+    </modules>
+    <handlers>
+      <remove name="ExtensionlessUrlHandler-Integrated-4.0" />
+      <remove name="OPTIONSVerbHandler" />
+      <remove name="TRACEVerbHandler" />
+      <add name="ExtensionlessUrlHandler-Integrated-4.0" path="*." verb="*" type="System.Web.Handlers.TransferRequestHandler" preCondition="integratedMode,runtimeVersionv4.0" />
+    </handlers>
+  </system.webServer>
+  <runtime>
+    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security.OAuth" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin.Security.Cookies" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Microsoft.Owin" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-3.0.1.0" newVersion="3.0.1.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="Newtonsoft.Json" culture="neutral" publicKeyToken="30ad4fe6b2a6aeed" />
+        <bindingRedirect oldVersion="0.0.0.0-13.0.0.0" newVersion="13.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Optimization" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-1.1.0.0" newVersion="1.1.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="WebGrease" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="0.0.0.0-1.5.2.14234" newVersion="1.5.2.14234" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Helpers" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.Mvc" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-5.2.3.0" newVersion="5.2.3.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Web.WebPages" publicKeyToken="31bf3856ad364e35" />
+        <bindingRedirect oldVersion="1.0.0.0-3.0.0.0" newVersion="3.0.0.0" />
+      </dependentAssembly>
+      <dependentAssembly>
+        <assemblyIdentity name="System.Runtime.CompilerServices.Unsafe" publicKeyToken="b03f5f7f11d50a3a" culture="neutral" />
+        <bindingRedirect oldVersion="0.0.0.0-6.0.0.0" newVersion="6.0.0.0" />
+      </dependentAssembly>
+    </assemblyBinding>
+  </runtime>
+  <entityFramework>
+    <contexts>
+      <context type="Infocus.WebApi.Data.WebApiDbContext, Infocus.WebApi.Data">
+        <databaseInitializer type="Infocus.WebApi.Data.WebApiDbInitializer, Infocus.WebApi.Data" />
+      </context>
+    </contexts>
+    <defaultConnectionFactory type="System.Data.Entity.Infrastructure.LocalDbConnectionFactory, EntityFramework">
+      <parameters>
+        <parameter value="mssqllocaldb" />
+      </parameters>
+    </defaultConnectionFactory>
+    <providers>
+      <provider invariantName="System.Data.SqlClient" type="System.Data.Entity.SqlServer.SqlProviderServices, EntityFramework.SqlServer" />
+    </providers>
+  </entityFramework>
+  <log4net>
+    <appender name="ConsoleAppender" type="log4net.Appender.ConsoleAppender">
+      <layout type="log4net.Layout.PatternLayout">
+        <!-- Pattern to output the caller's file name and line number -->
+        <conversionPattern value="%5level [%thread] (%file:%line) - %message%newline" />
+      </layout>
+    </appender>
+    <appender name="RollingFileAppender" type="log4net.Appender.RollingFileAppender">
+      <file value="${ProgramData}/Infocus/EDI/logs/log.txt" />
+      <appendToFile value="true" />
+      <maximumFileSize value="10000KB" />
+      <maxSizeRollBackups value="10" />
+      <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern value="%5level %date [%thread] %logger - %message%newline" />
+      </layout>
+    </appender>
+    <root>
+      <level value="DEBUG" />
+      <appender-ref ref="RollingFileAppender" />
+      <appender-ref ref="ConsoleAppender" />
+    </root>
+  </log4net>
+  <system.codedom>
+    <compilers>
+      <!--  <compiler language="c#;cs;csharp" extension=".cs" type="Microsoft.CSharp.CSharpCodeProvider, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" warningLevel="4" compilerOptions="/langversion:6 /nowarn:1659;1699;1701">
+        <providerOption name="CompilerVersion" value="v4.0"/>
+      </compiler>
+      <compiler language="vb;vbs;visualbasic;vbscript" extension=".vb" type="Microsoft.VisualBasic.VBCodeProvider, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" warningLevel="4" compilerOptions="/langversion:14 /nowarn:41008 /define:_MYTYPE=\&quot;Web\&quot; /optionInfer+">
+          <providerOption name="CompilerVersion" value="v4.0"/>
+      </compiler> -->
+      <compiler language="c#;cs;csharp" extension=".cs" type="Microsoft.CSharp.CSharpCodeProvider, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" warningLevel="4" compilerOptions="/langversion:5 /nowarn:1659;1699;1701">
+        <providerOption name="CompilerVersion" value="v4.0" />
+      </compiler>
+      <compiler language="vb;vbs;visualbasic;vbscript" extension=".vb" type="Microsoft.VisualBasic.VBCodeProvider, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" warningLevel="4" compilerOptions="/langversion:14 /nowarn:41008 /define:_MYTYPE=\&quot;Web\&quot; /optionInfer+">
+        <providerOption name="CompilerVersion" value="v4.0" />
+      </compiler>
+    </compilers>
+  </system.codedom>
+</configuration>
+<!--ProjectGuid: E90BF170-379E-42E7-8F59-5BC3CBC6C61A-->

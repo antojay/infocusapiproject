@@ -1,0 +1,88 @@
+﻿CREATE TABLE  [dbo].[InfocusEdi850HeaderRecord](
+	[HeaderId] [int] IDENTITY(1,1) NOT NULL,
+	[RecordDate] [datetime] NULL,
+	[Processed] [bit] NOT NULL,
+	[Processed856] [bit] NOT NULL,
+	[Processed810] [bit] NOT NULL,
+	[ErrorMessage] [nvarchar](max) NULL,
+	[SalesOrderKey] [int] NULL,
+	[ReceivedDateTime] [datetime] NOT NULL,
+	[ProcessedDateTime] [datetime] NULL,
+	[Processed856DateTime] [datetime] NULL,
+	[Processed810DateTime] [datetime] NULL,
+	[CardCode] [nvarchar](30) NULL,
+	[PurchaseOrderReference] [nvarchar](100) NULL,
+	[PurchaseOrderDate] [datetime] NULL,
+	[Department] [nvarchar](100) NULL,
+	[VendorNumber] [nvarchar](100) NULL,
+	[ReplenishmentNumber] [nvarchar](100) NULL,
+	[BuyerName] [nvarchar](255) NULL,
+	[DeliveryPhoneNumber] [nvarchar](100) NULL,
+	[TruckLoadNumber] [nvarchar](120) NULL,
+	[CarrierCode] [nvarchar](100) NULL,
+	[ConditionDescription] [nvarchar](max) NULL,
+	[ShipToName] [nvarchar](255) NULL,
+	[ShipToAttention] [nvarchar](255) NULL,
+  	[ShipToLocationCode] [nvarchar](100) NULL,
+                  [ShipToStoreLocation] [nvarchar](100) NULL,	
+	[ShipToAddress1] [nvarchar](100) NULL,
+	[ShipToAddress2] [nvarchar](100) NULL,
+	[ShipToCity] [nvarchar](100) NULL,
+	[ShipToState] [nvarchar](3) NULL,
+	[ShipToZip] [nvarchar](20) NULL,
+	[ShipToCountry] [nvarchar](100) NULL,
+	[PaymentMethod] [nvarchar](100) NULL,
+	[PromotionChargeCode] nvarchar(100) NULL,
+	[RequestedDeliveryDate] [datetime] NULL,
+	[RequestedShipDate] [datetime] NULL,
+	[UserDefined01] [nvarchar](max) NULL,
+	[UserDefined02] [nvarchar](max) NULL,
+	[UserDefined03] [nvarchar](max) NULL,
+	[UserDefined04] [nvarchar](max) NULL,
+	[UserDefined05] [nvarchar](max) NULL,
+	[UserDefined06] [nvarchar](max) NULL,
+	[UserDefined07] [nvarchar](max) NULL,
+	[UserDefined08] [nvarchar](max) NULL,
+	[UserDefined09] [nvarchar](max) NULL,
+	[UserDefined10] [nvarchar](max) NULL,
+ CONSTRAINT [PK.InfocusEdi850HeaderRecord] PRIMARY KEY CLUSTERED 
+(
+	[HeaderId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+
+CREATE TABLE  [dbo].[InfocusEdi850DetailRecord](
+	[DetailId] [int] IDENTITY(1,1) NOT NULL,
+	[HeaderId] [int] NOT NULL,
+	[LineNumber] [int] NOT NULL,
+	[BuyerItemCode] [nvarchar](100) NULL,
+	[VendorItemCode] [nvarchar](100) NULL,
+	[Quantity] [float] NOT NULL,
+	[UnitOfMeasure] [nvarchar](100) NULL,
+	[UnitPrice] [float] NULL,
+	[ItemDescription] [nvarchar](255) NULL,
+	[UserDefined01] [nvarchar](max) NULL,
+	[UserDefined02] [nvarchar](max) NULL,
+	[UserDefined03] [nvarchar](max) NULL,
+	[UserDefined04] [nvarchar](max) NULL,
+	[UserDefined05] [nvarchar](max) NULL,
+	[UserDefined06] [nvarchar](max) NULL,
+	[UserDefined07] [nvarchar](max) NULL,
+	[UserDefined08] [nvarchar](max) NULL,
+	[UserDefined09] [nvarchar](max) NULL,
+	[UserDefined10] [nvarchar](max) NULL,
+ CONSTRAINT [PK_InfocusEdi850DetailRecord] PRIMARY KEY CLUSTERED 
+(
+	[DetailId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+
+ALTER TABLE [dbo].[InfocusEdi850DetailRecord]  WITH CHECK ADD  CONSTRAINT [FK_InfocusEdi850DetailRecord_InfocusEdi850HeaderRecord] FOREIGN KEY([HeaderId])
+REFERENCES [dbo].[InfocusEdi850HeaderRecord] ([HeaderId])
+GO
+ALTER TABLE [dbo].[InfocusEdi850DetailRecord] CHECK CONSTRAINT [FK_InfocusEdi850DetailRecord_InfocusEdi850HeaderRecord]
+GO

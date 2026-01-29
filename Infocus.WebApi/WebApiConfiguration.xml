@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<WebApiConfiguration>
+  <Companies>
+    <Company Id="Company1">
+      <LicenseServer>DESKTOP-6S7SBK2</LicenseServer>
+      <CompanyUser>manager</CompanyUser>
+      <CompanyPassword>B1Admin</CompanyPassword>
+      <DatabaseType>SQL2016</DatabaseType>
+      <DatabaseServer>DESKTOP-6S7SBK2</DatabaseServer>
+      <Database>Corsan_Logistics_Live</Database>
+      <DatabaseUseTrusted>false</DatabaseUseTrusted>
+      <DatabaseUser>sa</DatabaseUser>
+      <DatabasePassword>B1Admin</DatabasePassword>
+    </Company>
+  </Companies>
+</WebApiConfiguration>

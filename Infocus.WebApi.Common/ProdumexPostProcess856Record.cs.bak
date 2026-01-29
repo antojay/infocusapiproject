@@ -1,0 +1,413 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Data.SqlClient;
+using System.Text;
+using System.Threading.Tasks;
+using Infocus.WebApi.Data.Models;
+using System.Configuration;
+using log4net;
+
+namespace Infocus.WebApi.Common
+{
+    public sealed class ProdumexPostProcess856Record : IPostProcess856Record
+    {
+        private static ILog _logger = LogManager.GetLogger(typeof(ProdumexPostProcess856Record));
+        /*        
+                private static String ProdumexQuery =
+        @"select 
+            isnull(T5.PlltNum, 0) as 'NumberOfPallets',
+            isnull(T3.SSCC, '') as 'PalletId',
+            isnull((T3.Quantity * -1), 0) as 'NumberOfCartons'	
+        from PMX_INVD T3 
+            inner join 
+            (
+                select T0.DocEntry, COUNT(*) as 'PlltNum' 
+                from PMX_INVD T0 
+                where T0.DocEntry = {0} 
+                    and T0.DocLineNum = {1}
+                    and T0.TransType = '15'
+                group by T0.DocEntry
+            ) T5 on T5.DocEntry = T3.DocEntry			
+        where T3.DocEntry = {0}
+            and T3.TransType = '15'
+            and T3.DocLineNum = {1}";
+        */
+        //private static String ProdumexPalletQuery =
+        // 05-24-2017 begin    
+        /*@"select T0.SSCC, T0.ItemCode, T0.DocLineNum, Abs(T0.Quantity) as Quantity, T1.U_InfoW2LNo
+        from PMX_INVD T0
+        inner join DLN1 T1 on T0.DocEntry = T1.DocEntry and T0.DocLineNum = T1.LineNum
+        inner join ODLN T2 on T1.DocEntry = T2.DocEntry
+        where T0.DocEntry = {0}
+        and T0.TransType = '15'
+        and T1.TargetType <> 16
+        and T2.Canceled = 'N'";
+        */
+        // 01-28-2018 begin
+
+        /* @"select coalesce(T0.SSCC, T1.U_InfoW2MPId) as 'SSCC', T0.ItemCode, T0.DocLineNum, SUM(Abs(T0.Quantity)) as Quantity, T1.U_InfoW2LNo, T1.SubCatNum, t1.Dscription
+     from PMX_INVD T0
+         inner join DLN1 T1 on T0.DocEntry = T1.DocEntry and T0.DocLineNum = T1.LineNum
+         inner join ODLN T2 on T1.DocEntry = T2.DocEntry
+     where T0.DocEntry = {0}
+         and T0.TransType = '15'
+         and T1.TargetType <> 16
+         and T1.TreeType = 'N')
+         and T2.Canceled = 'N'
+     group by T0.DocLineNum, T0.SSCC, T1.U_InfoW2MPId, T0.ItemCode, T1.U_InfoW2LNo, T1.SubCatNum, t1.Dscription";
+     */
+        private static String ProdumexPalletQuery =
+             @"With SerialInfo (DocEntry, CardCode, SerialNo, ItemCode, TreeType, DocLineNum, Quantity, U_InfoW2LnNo, SubCatNum, Dscription) AS (
+select t2.DocEntry, t2.CardCode, cast(coalesce(T0.SSCC, T1.U_InfoW2MPId) as nvarchar) as 'SerialNo', T0.ItemCode, T1.TreeType, T0.DocLineNum, 
+SUM(Abs(T0.Quantity)) as Quantity, T1.U_InfoW2LNo, T1.SubCatNum, t1.Dscription
+from PMX_INVD T0 inner join DLN1 T1 on T0.DocEntry = T1.DocEntry and T0.DocLineNum = T1.LineNum
+    inner join ODLN T2 on T1.DocEntry = T2.DocEntry
+    left join OWHS T3 on T3.WhsCode = T1.WhsCode
+  where T0.DocEntry = {0}
+	and T0.TransType = '15'
+    and T1.TargetType<> 16
+    and T2.Canceled = 'N'
+    and (T1.TreeType = 'S' or T1.TreeType = 'N') and t3.U_PMX_IMBP = 'Y' 
+group by t2.DocEntry, t2.CardCode, T0.DocLineNum, coalesce(T0.SSCC, T1.U_InfoW2MPId), T1.U_InfoW2MPId, T0.ItemCode, T1.TreeType, T1.U_InfoW2LNo, T1.SubCatNum, t1.Dscription
+ UNION ALL
+select t3.DocEntry, t3.CardCode, cast(coalesce(T0.SSCC, T2.U_InfoW2MPId) as nvarchar) as SerialNo, t2.ItemCode, t2.TreeType, T0.DocLineNum,
+ T2.Quantity, T2.U_InfoW2LNo, t2.SubCatNum, t2.Dscription    
+ from PMX_INVD T0 left join [Infocus_EDI_DLN_Line_Totals] t1 on t0.DocEntry = t1.DocEntry and t0.DocLineNum >= t1.LineNum 
+ and (t0.DocLineNum < t1.NextLine or T0.DocLineNum <= t1.NextLine) 
+ left join DLN1 t2 on t2.DocEntry = t1.DocEntry and t1.LineNum = t2.LineNum  
+ inner join ODLN T3 on T2.DocEntry = T3.DocEntry   
+ left join OWHS T4 on T4.WhsCode = T2.WhsCode 
+ where T0.TransType = '15' and T2.TargetType<> 16 and T3.Canceled = 'N'  
+  and (T2.TreeType = 'S' or T2.TreeType = 'N') and t4.U_PMX_IMBP = 'Y' 
+  and t0.DocLineNum = (select min(DocLineNum) from PMX_INVD where TransType = '15' and DocEntry = t1.DocEntry and DocLineNum >= t1.LineNum 
+  and DocLineNum <= t1.NextLine)
+  and T2.DocEntry = {0} 
+UNION ALL
+select t2.DocEntry, t2.CardCode, cast(coalesce(T1.U_InfoW2MPId,'') as nvarchar) as 'SerialNo', T1.ItemCode, T1.TreeType, T1.LineNum, SUM(Abs(T1.Quantity)) as Quantity, 
+T1.U_InfoW2LNo, T1.SubCatNum, t1.Dscription
+from DLN1 T1 left join ODLN T2 on T1.DocEntry = T2.DocEntry
+where T1.DocEntry = {0}
+	and T1.TargetType<> 16
+    and T2.Canceled = 'N'
+    and (T1.TreeType = 'S' or T1.TreeType = 'N')
+    and ltrim(Rtrim(cast(coalesce(T1.U_InfoW2MPId,'') as nvarchar))) != '' and ltrim(rtrim(cast(coalesce(t1.U_PMX_SSCC,'') as nvarchar))) = ''
+group by t2.DocEntry, t2.CardCode, T1.LineNum, coalesce(T1.U_InfoW2MPId,''), T1.U_InfoW2MPId, T1.ItemCode, T1.TreeType, T1.U_InfoW2LNo, T1.SubCatNum,t1.Dscription
+) select distinct  (case when len(ltrim(rtrim(coalesce(SerialNo,'')))) = 0 then (select MAX(U_InfoW2MPId) +1 from DLN1) else SerialNo END) SerialNo, 
+(case when t0.ItemCode = SubCatNum then t1.U_EDI_XREF else t0.ItemCode END) ItemCode, TreeType, DocLineNum, Quantity, cast(coalesce(U_InfoW2LnNo,1) as int) U_InfoW2LnNo, 
+(Case when len(ltrim(Rtrim(coalesce(SubCatNum,'')))) > 0 then SubCatNum else t1.Substitute END) SubCatNum, Dscription from SerialInfo t0 left join OSCN t1 on t0.CardCode = t1.CardCode and t0.ItemCode = t1.ItemCode";
+        // 01-22-2018 end
+
+
+        // 08-29-2017 begin
+        private static String DeliveryQuery =
+                    @"select T1.ItemCode, T1.LineNum, SUM(Abs(T1.Quantity)) as Quantity, T1.U_InfoW2LNo, T1.SubCatNum, --T1.U_InfoVendorItem 'VendorItem', 
+t1.Dscription, t1.U_InfoW2MPId as 'SSCC'
+from DLN1 T1 left join ODLN T2 on T1.DocEntry = T2.DocEntry
+left join OWHS t3 on T1.WhsCode = t3.WhsCode
+where T1.DocEntry = {0}
+    and T1.TargetType <> 16
+    and T2.Canceled = 'N' 
+    and (T1.TreeType = 'S' or T1.TreeType = 'N') and t3.U_PMX_IMBP = 'N' 
+
+group by T1.LineNum, T1.ItemCode, T1.U_InfoW2LNo, T1.SubCatNum, t1..Dscription,t1.U_InfoW2MPId --, t1.U_InfoVendorItem";
+        // 08-29-2017 end
+
+        private static String ShippingMethodQuery =
+@"select top 1 isnull(U_InfoW2Tm, 'M') as TransportationMethod
+from OSHP
+where TrnspCode = {0}";
+        // 01-21-2018 begin
+        public String GetConnectionString()
+        {
+            if (ConfigurationManager.ConnectionStrings["WebApiDbContext"] == null)
+            {
+                String msg = "No WebApiDbContext connection string found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+
+            String connectionString = ConfigurationManager.ConnectionStrings["WebApiDbContext"].ConnectionString;
+            if (String.IsNullOrWhiteSpace(connectionString))
+            {
+                String msg = "Invalid WebApiDbContext connection string found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+            return connectionString;
+        }
+        private string getPMXConnectionName(string pCardCode)
+        {
+            string oPMXConnection = "ProdumexConnectionString";
+            string oQuery = "select ProdumexConnectionName from InfocusEDI.dbo.WebApiDbContext where CardCode = '" + pCardCode + "'";
+            using (SqlConnection sqlConnection = new SqlConnection(GetConnectionString()))
+            {
+                sqlConnection.Open();
+                using (SqlCommand command = new SqlCommand(oQuery, sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (!reader.Read())
+                        {
+                            oPMXConnection = "ProdumexConnectionString";
+                        }
+                        else
+                        {
+                            oPMXConnection = (String)reader["ProdumexConnectionName"];
+                        }
+                    }
+                }
+                sqlConnection.Close();
+            }
+            return oPMXConnection;
+        }
+        // 01-21-2018 end
+        public void OnPostProcess856Record(Delivery delivery, Edi850HeaderRecord edi850HeaderRecord, Edi856HeaderRecord edi856HeaderRecord)
+        {
+            // 01-21-2018 begin
+            string oPmxConnectionName = getPMXConnectionName(edi850HeaderRecord.CardCode);
+            if (oPmxConnectionName == null || oPmxConnectionName.Trim().Length == 0)
+            {
+                oPmxConnectionName = "ProdumexConnectionString";
+            }
+            // if (ConfigurationManager.ConnectionStrings["ProdumexConnectionString"] == null)
+            if (ConfigurationManager.ConnectionStrings[oPmxConnectionName] == null)
+            // 01-21-2018 end 
+            {
+                String msg = "No ProdumexConnectionString found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+
+            // 01-21-2018 begin
+            //String connectionString = ConfigurationManager.ConnectionStrings["ProdumexConnectionString"].ConnectionString;
+            String connectionString = ConfigurationManager.ConnectionStrings[oPmxConnectionName].ConnectionString;
+            // 01-21-2018 end
+            if (String.IsNullOrWhiteSpace(connectionString))
+            {
+                String msg = "Invalid ProdumexConnectionString found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+            bool bProdumex = true;
+            using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+            {
+                sqlConnection.Open();
+                String sqlToRun = String.Format(ProdumexPalletQuery, delivery.DocEntry);
+                _logger.Debug("Running Produmex SQL: " + sqlToRun);
+                using (SqlCommand command = new SqlCommand(sqlToRun, sqlConnection))
+                {
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.HasRows)
+                        {  // 08-29-2017
+                            while (reader.Read())
+                            {
+                                string oTreeType = (String)reader["TreeType"];
+                                if (oTreeType == "N" || oTreeType == "S")
+                                {
+                                    Edi856PalletDetailRecord detail = new Edi856PalletDetailRecord();
+                                    edi856HeaderRecord.Details.Add(detail);
+                                    string oAltVendNo = "";
+                                    try
+                                    {
+                                        oAltVendNo = (String)reader["VendorItem"];
+                                    } catch
+                                    {
+                                        oAltVendNo = "";
+                                    }
+                                    if (String.IsNullOrWhiteSpace(oAltVendNo))
+                                    { // 02-21-2015
+                                        detail.VendorItemCode = (String)reader["ItemCode"];
+                                        // 02-21-2018 begin
+                                    }
+                                    else
+                                    {
+                                        detail.VendorItemCode = (String)oAltVendNo;
+                                    }
+                                    // 02-21-2018 end
+                                    // 01-21-2017 begin
+                                    string oSSCC = null;
+                                    try
+                                    {
+                                        int oSerNo = (Int32)reader["SerialNo"];
+                                        string oSerialNo = oSerNo.ToString();
+                                        oSSCC = oSerialNo.ToString();
+                                    }
+                                    catch (Exception cc)
+                                    {
+                                        string oError = cc.Message;
+                                        oSSCC = "";
+                                    }
+                                    //detail.SerialNumber = (String)reader["SSCC"];
+                                    detail.SerialNumber = oSSCC;
+                                    // 01-21-2017 end
+                                    if (detail.SerialNumber != null && detail.SerialNumber.Length > 0)
+                                    {
+                                        detail.SerialNumber = detail.SerialNumber.Trim().PadLeft(20, '0');
+                                    }
+                                    try
+                                    {
+                                        detail.LineNumber = Convert.ToInt32(reader["U_InfoW2LnNo"]);
+                                    } catch  (Exception Lno) {
+                                        string oErr = Lno.Message;
+                                    }
+                                   
+                                    detail.Quantity = Convert.ToDouble(reader["Quantity"]);
+
+                                    var detail850 = (from v in edi850HeaderRecord.Details
+                                                     where v.VendorItemCode.Equals(detail.VendorItemCode, StringComparison.InvariantCultureIgnoreCase)
+                                                     select v).FirstOrDefault();
+                                    if (detail850 != null)
+                                    {
+                                        if (!String.IsNullOrWhiteSpace(detail850.BuyerItemCode))
+                                        {
+                                            detail.BuyerItemCode = detail850.BuyerItemCode;
+                                        } else
+                                        {
+                                            detail.BuyerItemCode = (String)reader["SubCatNum"];
+                                        }
+                                        if (!String.IsNullOrWhiteSpace(detail850.ItemDescription))
+                                        {
+                                            detail.ItemDescription = detail850.ItemDescription;
+                                        } else
+                                        {
+                                            detail.ItemDescription = (String)reader["Dscription"];
+                                        }
+                                        if (detail.LineNumber == 0)
+                                        {
+                                            detail.LineNumber = detail850.LineNumber;
+                                        }
+                                    } // 08-10-2017 begin
+                                    else
+                                    {
+                                        detail.BuyerItemCode = (String)reader["SubCatNum"];
+                                        detail.ItemDescription = (String)reader["Dscription"];
+                                        // 01-22-2018 begin
+                                        if (detail.BuyerItemCode == null || detail.BuyerItemCode.Trim().Length == 0)
+                                        {
+                                            detail.BuyerItemCode = detail.VendorItemCode;
+                                        }
+                                        // 01-22-2018 end
+                                    } // 08-10-2017 end
+                                }
+                            }
+                        }
+                        else // 08-29-2017 begin
+                        {
+                            bProdumex = false;
+
+                        }// 08-29-2017 end
+                    }
+                }
+
+                edi856HeaderRecord.AsnShipDate = delivery.DocDueDate;
+                edi856HeaderRecord.BillOfLading = delivery.U_Info_BOL;
+
+                if (delivery.TrnspCode > 0)
+                {
+                    String sql = String.Format(ShippingMethodQuery, delivery.TrnspCode);
+                    using (SqlCommand command = new SqlCommand(sql, sqlConnection))
+                    {
+                        using (SqlDataReader reader = command.ExecuteReader())
+                        {
+                            reader.Read();
+                            edi856HeaderRecord.TransportationMethod = (String)reader[0];
+                        }
+                    }
+                }
+
+                if (String.IsNullOrWhiteSpace(edi856HeaderRecord.TransportationMethod))
+                {
+                    edi856HeaderRecord.TransportationMethod = "M";
+                }
+                sqlConnection.Close();
+            }
+            // 08-29-2017 begin
+            if (bProdumex == false)
+            {
+                connectionString = ConfigurationManager.ConnectionStrings["WebApiDbContext"].ConnectionString;
+                if (String.IsNullOrWhiteSpace(connectionString))
+                {
+                    String msg = "Invalid WebAPIConnectionString found in Web.config";
+                    _logger.Error(msg);
+                    throw new WebApiException(msg);
+                }
+                using (SqlConnection sqlConnection = new SqlConnection(connectionString))
+                {
+                    sqlConnection.Open();
+
+
+                    String sqlToRun = String.Format(DeliveryQuery, delivery.DocEntry);
+                    _logger.Debug("Running Delivery SQL: " + sqlToRun);
+                    using (SqlCommand command2 = new SqlCommand(sqlToRun, sqlConnection))
+                    {
+                        using (SqlDataReader reader2 = command2.ExecuteReader())
+                        {
+                            if (reader2.HasRows)
+                            {
+                                while (reader2.Read())
+                                {
+                                    Edi856PalletDetailRecord detail = new Edi856PalletDetailRecord();
+                                    edi856HeaderRecord.Details.Add(detail);
+                                    detail.VendorItemCode = (String)reader2["ItemCode"];
+                                    if (detail.SerialNumber != null)
+                                    {
+                                        detail.SerialNumber = detail.SerialNumber.Trim().PadLeft(20, '0');
+                                    }
+                                    else
+                                    {
+                                        detail.SerialNumber = ((String)reader2["SSCC"]).Trim().PadLeft(20, '0');
+                                    }
+                                    detail.Quantity = Convert.ToDouble(reader2["Quantity"]);
+
+                                    var detail850 = (from v in edi850HeaderRecord.Details
+                                                     where v.VendorItemCode.Equals(detail.VendorItemCode, StringComparison.InvariantCultureIgnoreCase)
+                                                     select v).FirstOrDefault();
+                                    if (detail850 != null)
+                                    {
+                                        detail.BuyerItemCode = detail850.BuyerItemCode;
+                                        detail.ItemDescription = detail850.ItemDescription;
+                                    }
+                                    else
+                                    {
+                                        detail.BuyerItemCode = (String)reader2["SubCatNum"];
+                                        // 01-22-2018 begin
+                                        if (detail.BuyerItemCode == null || detail.BuyerItemCode.Trim().Length == 0)
+                                        {
+                                            detail.BuyerItemCode = detail.VendorItemCode;
+                                        }
+                                        // 01-22-2018 end
+                                        detail.ItemDescription = (String)reader2["Dscription"];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    edi856HeaderRecord.AsnShipDate = delivery.DocDueDate;
+                    edi856HeaderRecord.BillOfLading = delivery.U_Info_BOL;
+
+                    if (delivery.TrnspCode > 0)
+                    {
+                        String sql = String.Format(ShippingMethodQuery, delivery.TrnspCode);
+                        using (SqlCommand command = new SqlCommand(sql, sqlConnection))
+                        {
+                            using (SqlDataReader reader = command.ExecuteReader())
+                            {
+                                reader.Read();
+                                edi856HeaderRecord.TransportationMethod = (String)reader[0];
+                            }
+                        }
+                    }
+
+                    if (String.IsNullOrWhiteSpace(edi856HeaderRecord.TransportationMethod))
+                    {
+                        edi856HeaderRecord.TransportationMethod = "M";
+                    }
+                    sqlConnection.Close();
+                }
+            }
+            // 08-29-2017 end
+        }
+    }
+}

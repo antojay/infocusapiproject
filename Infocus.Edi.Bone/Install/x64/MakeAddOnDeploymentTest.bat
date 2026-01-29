@@ -1,0 +1,18 @@
+echo on
+SET PROCESSOR=x64
+SET SDK_EXE_PATH=C:\Program Files (x86)\SAP\SAP Business One SDK\Tools\AddOnRegDataGen
+SET PROJECT_PATH=C:\Infocus Source\Infocus.WebApi\Infocus.Edi.Bone
+SET PROJECT_INSTALL_PATH=%PROJECT_PATH%\Install\x64
+SET XML_FILE_PATH=%PROJECT_INSTALL_PATH%\Infocus.Edi.Bone.Test.Install.xml
+REM SET EXECUTABLE_PATH=%PROJECT_PATH%\bin\x64\Debug\Infocus.Edi.Bone.exe
+SET EXECUTABLE_PATH=%PROJECT_PATH%\bin\x64\Debug\Infocus.Edi.Bone.exe
+SET OUTPUT_PATH=%PROJECT_INSTALL_PATH%\Output
+SET INSTALLER_FILE_PATH=%OUTPUT_PATH%\Infocus.Edi.Bone.Install.Test.x64.exe
+SET VERSION=2023.10.05.00
+
+SET OUTPUT_FILE=%OUTPUT_PATH%\Infocus.Edi.Bone.Install.Test.x64.ard
+
+echo
+del "%OUTPUT_FILE%
+"%SDK_EXE_PATH%\AddOnRegDataGen.exe" "%XML_FILE_PATH%" "%VERSION%" "%INSTALLER_FILE_PATH%" "%INSTALLER_FILE_PATH%" "%EXECUTABLE_PATH%"
+move "%OUTPUT_PATH%\Infocus EDI (x64).ard" "%OUTPUT_FILE%"

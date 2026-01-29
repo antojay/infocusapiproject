@@ -1,0 +1,10 @@
+<AddOnInfo 
+  partnernmsp="INFO" 
+  contdata="Infocus Technologies" 
+  addonname="Test Infocus EDI (x64)" 
+  addongroup="M" 
+  esttime="60" 
+  instparams="" 
+  uncmdarg="/uninstall" 
+  partnername="Infocus Technologies" 
+  unesttime="60"/>

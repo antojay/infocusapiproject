@@ -1,0 +1,83 @@
+﻿using System;
+using System.Linq;
+using SAPbouiCOM;
+using Infocus.Framework.SapBone;
+using log4net;
+using Infocus.Framework.SapBone.Forms;
+using Infocus.WebApi.Data;
+using Infocus.WebApi.Common.Bone;
+
+namespace Infocus.Edi.Bone.Forms
+{
+    internal sealed class ProcessEdiFormOkButton : BoneItem
+    {
+        private static readonly ILog _logger = LogManager.GetLogger(typeof(ProcessEdiFormOkButton));
+        public ProcessEdiFormOkButton()
+            : base()
+        {
+            FormType = SAPUIConstants.PROCESS_EDI_FORM_TYPE;
+            ItemUID = "BtOk";
+        }
+
+        [BoneListener(BoEventTypes.et_ITEM_PRESSED, false)]
+        public void OnAfterItemPressed(ItemEvent itemEvent)
+        {
+            Form form = BoneConnectionContext.Application.Forms.Item(itemEvent.FormUID);
+            form.Items.Item("BtOk").Enabled = false;
+            BoneSalesOrderDataLayer salesOrderDAL = new BoneSalesOrderDataLayer(BoneConnectionContext.Company);
+            ProgressBar progressBar = null;
+            try
+            {
+                using (WebApiDbContext webApiDbContext = new WebApiDbContext(AppSettings.Instance.GetConnectionString()))
+                {
+                    var records = (from recs in webApiDbContext.Edi850HeaderRecords.OrderBy(lor => lor.HeaderId)
+                                   where recs.Processed == false
+                                   select recs).ToList();
+                    progressBar = BoneConnectionContext.Application.StatusBar.CreateProgressBar("Processing Records. Please wait", records.Count(), false);
+                    int ctr = 0;
+                    foreach (var record in records)
+                    {
+                        _logger.Debug("Processing 850 with Record Key " + record.HeaderId);
+                        var documentKey = salesOrderDAL.Process850Record(record);
+                        progressBar.Value = ++ctr;
+                        _logger.Debug("Successfully created sales order");
+                        DateTime now = DateTime.Now;
+                        record.Processed = true;
+                        record.ProcessedDateTime = now;
+                        record.SalesOrderKey = documentKey.DocEntry;
+                        webApiDbContext.SaveChanges();
+                        String msg = "Sucessfully processed 850 Key #" + record.HeaderId + ", Sales Order #" + documentKey.DocNum;
+                        _logger.Debug(msg);
+                        BoneConnectionContext.Application.StatusBar.SetSystemMessage(msg, BoMessageTime.bmt_Medium, BoStatusBarMessageType.smt_Success);
+                        Int32 ordersCreated = Int32.Parse(form.DataSources.UserDataSources.Item("UdsOrdCre").Value);
+                        ordersCreated++;
+                        form.DataSources.UserDataSources.Item("UdsOrdCre").Value = ordersCreated.ToString();
+                        Int32 recordsProcessed = Int32.Parse(form.DataSources.UserDataSources.Item("UdsRecPro").Value);
+                        recordsProcessed += 1;
+                        form.DataSources.UserDataSources.Item("UdsRecPro").Value = recordsProcessed.ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex);
+                // ExceptionForm.ShowModal(ex);
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+            }
+            finally
+            {
+                if (progressBar != null)
+                {
+                    try
+                    {
+                        progressBar.Stop();
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+    }
+}

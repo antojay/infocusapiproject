@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" />
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{26D28FC8-059B-4440-A28D-E0A2684F29DD}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Infocus.WebApi.Common</RootNamespace>
+    <AssemblyName>Infocus.WebApi.Common</AssemblyName>
+    <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
+    <Reference Include="Interop.SAPbobsCOM, Version=9.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+      <HintPath>..\..\..\B1 Projects\10dll\Interop.SAPbobsCOM.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=692fbea5521e1304, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Projects\Infocus.Common\Infocus.Common\Redistribute\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.1.2\lib\net462\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Add820RecordRequest.cs" />
+    <Compile Include="Add180RecordRequest.cs" />
+    <Compile Include="Add820RecordResponse.cs" />
+    <Compile Include="Add850RecordRequest.cs" />
+    <Compile Include="Add940RecordRequest.cs" />
+    <Compile Include="Add860RecordRequest.cs" />
+    <Compile Include="Add180RecordResponse.cs" />
+    <Compile Include="Add940RecordResponse.cs" />
+    <Compile Include="Add860RecordResponse.cs" />
+    <Compile Include="BasePreProcess856Record.cs" />
+    <Compile Include="Bone\BonePaymentDataLayer.cs" />
+    <Compile Include="Bone\BoneReturnDataLayer.cs" />
+    <Compile Include="Bone\Import_Log.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Edi180RDetailRecord.cs" />
+    <Compile Include="Edi180RHeaderRecord.cs" />
+    <Compile Include="Edi753DetailRecord.cs" />
+    <Compile Include="Edi753HeaderRecord.cs" />
+    <Compile Include="Edi810CHeaderRecord.cs" />
+    <Compile Include="Edi810CDetailRecord.cs" />
+    <Compile Include="Edi846WWhsRecord.cs" />
+    <Compile Include="Edi846WDetailRecord.cs" />
+    <Compile Include="Edi846DetailRecord.cs" />
+    <Compile Include="Edi846WHeaderRecord.cs" />
+    <Compile Include="Edi855DetailRecord.cs" />
+    <Compile Include="Edi846HeaderRecord.cs" />
+    <Compile Include="Edi856PackRecord.cs" />
+    <Compile Include="Edi856PalletRecord.cs" />
+    <Compile Include="Edi870DetailRecord.cs" />
+    <Compile Include="Edi810DetailRecord.cs" />
+    <Compile Include="Edi810HeaderRecord.cs" />
+    <Compile Include="Edi855HeaderRecord.cs" />
+    <Compile Include="Edi870HeaderRecord.cs" />
+    <Compile Include="Edi856ItemDetailRecord.cs" />
+    <Compile Include="Edi856HeaderRecord.cs" />
+    <Compile Include="Get753RecordsRequest.cs" />
+    <Compile Include="Get753RecordsResponse.cs" />
+    <Compile Include="Get846PRecordsRequest.cs" />
+    <Compile Include="Get846PRecordsResponse.cs" />
+    <Compile Include="GetRet180RecordsRequest.cs" />
+    <Compile Include="Get810CRecordsRequest .cs" />
+    <Compile Include="Get810RecordsRequest.cs" />
+    <Compile Include="Get810CRecordsResponse.cs" />
+    <Compile Include="Get810RecordsResponse.cs" />
+    <Compile Include="Get846RecordsRequest.cs" />
+    <Compile Include="Get855RecordsRequest.cs" />
+    <Compile Include="Get846RecordsResponse.cs" />
+    <Compile Include="GetRet180RecordsResponse.cs" />
+    <Compile Include="Get855RecordsResponse.cs" />
+    <Compile Include="Get870RecordsResponse.cs" />
+    <Compile Include="Get870RecordsRequest.cs" />
+    <Compile Include="Get856RecordsResponse.cs" />
+    <Compile Include="Get856RecordsRequest.cs" />
+    <Compile Include="IPostProcess753Record.cs" />
+    <Compile Include="IPostProcess846PRecord.cs" />
+    <Compile Include="IPostProcessRet180Record.cs" />
+    <Compile Include="IPostProcess810CRecord.cs" />
+    <Compile Include="IPostProcess810Record.cs" />
+    <Compile Include="IPostProcess846Record.cs" />
+    <Compile Include="IPostProcess855Record.cs" />
+    <Compile Include="IPostProcess870Record.cs" />
+    <Compile Include="IPostProcess856Record.cs" />
+    <Compile Include="IPreProcess753Record.cs" />
+    <Compile Include="IPreProcess846PRecord.cs" />
+    <Compile Include="IPreProcessRet180Record.cs" />
+    <Compile Include="IPreProcess810CRecord.cs" />
+    <Compile Include="IPreProcess810Record.cs" />
+    <Compile Include="IPreProcess846Record.cs" />
+    <Compile Include="IPreProcess855Record.cs" />
+    <Compile Include="IPreProcess870Record.cs" />
+    <Compile Include="IPreProcess856Record.cs" />
+    <Compile Include="Process855RecordsRequest.cs" />
+    <Compile Include="Process870RecordsRequest.cs" />
+    <Compile Include="Process856RecordsRequest.cs" />
+    <Compile Include="Process855RecordsResponse.cs" />
+    <Compile Include="Process870RecordsResponse.cs" />
+    <Compile Include="Process856RecordsResponse.cs" />
+    <Compile Include="AddressInformation.cs" />
+    <Compile Include="Add850RecordResponse.cs" />
+    <Compile Include="AddSalesOrderRequest.cs" />
+    <Compile Include="AddSalesOrderResponse.cs" />
+    <Compile Include="BaseUserDefinedObject.cs" />
+    <Compile Include="BaseWebApiRequest.cs" />
+    <Compile Include="BaseWebApiResponse.cs" />
+    <Compile Include="Bone\WebApiConfiguration.cs" />
+    <Compile Include="Bone\BoneSalesOrderDataLayer.cs" />
+    <Compile Include="Bone\BusinessOneRuntimeContext.cs" />
+    <Compile Include="DocumentKey.cs" />
+    <Compile Include="ProdumexPostProcess856Record.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SalesOrder.cs" />
+    <Compile Include="SalesOrderLine.cs" />
+    <Compile Include="SecurityInformation.cs" />
+    <Compile Include="WebApiException.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Extensions\Xml\UdxWebApi - Copy.xml" />
+    <Content Include="Extensions\Xml\UdxWebApi.xml">
+      <SubType>Designer</SubType>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Infocus.WebApi.Data\Infocus.WebApi.Data.csproj">
+      <Project>{75bb844a-b69b-4a90-8697-5de7edd90d12}</Project>
+      <Name>Infocus.WebApi.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="SAPbobsCOM">
+      <Guid>{FC8030BE-F5D2-4B8E-8F92-44228FE30100}</Guid>
+      <VersionMajor>10</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(SolutionDir)\.nuget\NuGet.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\.nuget\NuGet.targets'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.props'))" />
+    <Error Condition="!Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.5.1\build\EntityFramework.targets'))" />
+  </Target>
+  <Import Project="..\packages\EntityFramework.6.5.1\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.5.1\build\EntityFramework.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

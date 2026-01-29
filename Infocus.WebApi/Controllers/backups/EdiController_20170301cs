@@ -1,0 +1,902 @@
+﻿using Infocus.WebApi.Common;
+using Infocus.WebApi.Common.Bone;
+using Infocus.WebApi.Data;
+using Infocus.WebApi.Data.Models;
+using log4net;
+using System;
+using System.Collections.Generic;
+using System.Configuration;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+
+namespace Infocus.WebApi.Controllers
+{
+    public class EdiController2 : BaseWebApiController
+    {
+        private static ILog _logger = LogManager.GetLogger(typeof(EdiController));
+        private static readonly String ShipmentQuery =
+@"select top 1 TrnspName
+from OSHP
+where TrnspCode = {0}";
+        private static readonly String PaymentGroupQuery =
+@"select top 1 PymntGroup, ExtraDays
+from OCTG
+where GroupNum = {0}";
+        [HttpPost]
+        public Get856RecordsResponse Get856Records(Get856RecordsRequest request)
+        {
+            IPreProcess856Record iPreProcess856Record = null;
+            IPostProcess856Record iPostProcess856Record = null;
+            List<Edi850WithDeliveryLine> listToProcess = new List<Edi850WithDeliveryLine>();
+            _logger.Debug("Entering Get856Records");
+            _logger.Debug("Processing the following request object:");
+            //_logger.Debug("{@Get856RecordRequest}", request);
+            Get856RecordsResponse response = new Get856RecordsResponse();
+            if(!this.Authorize(request))
+            {
+                response.ErrorMessage = "Authentication information is invalid";
+                response.Successful = false;
+                return response;
+            }
+            if(String.IsNullOrWhiteSpace(request.CardCode))
+            {
+                response.ErrorMessage = "Card Code is required for Get856Records";
+                response.Successful = false;
+                return response;
+            }
+            try
+            {
+                iPreProcess856Record = Get856PreProcess(request.CardCode);
+                iPostProcess856Record = Get856PostProcess(request.CardCode);
+                List<Edi850HeaderRecord> listOf850Records = null;
+                using(WebApiDbContext dbContext = new WebApiDbContext())
+                {
+                    listOf850Records = dbContext.Edi850HeaderRecords
+                        .Where(x => x.Processed856 == false
+                            && x.Processed == true
+                            && x.CardCode == request.CardCode
+                            && x.SalesOrderKey > 0).ToList();
+                    _logger.Debug("There are " + listOf850Records.Count + " 856 records to process");
+                    foreach(var record in listOf850Records)
+                    {
+                        _logger.Debug("Processing 856 with 850 Key " + record.HeaderId);
+                        DeliveryLine deliveryLine = FindMatchingDelivery(dbContext, record);
+                        if(deliveryLine != null)
+                        {
+                            _logger.Debug("Found 856 delivery line from delivery with key " + deliveryLine.DocEntry);
+                            listToProcess.Add(new Edi850WithDeliveryLine(record, deliveryLine));
+                        }
+                        else
+                        {
+                            _logger.Debug("856 delivery line not found for 850 record with key " + record.RecordKey);
+                        }
+                    }
+                }
+                
+                if(listToProcess.Count == 0)
+                {
+                    response.Successful = true;
+                    return response;
+                }
+                //To do -Need to filter records, but not sure how to right now
+                foreach(var selectedRecord in listToProcess)
+                {
+                    try
+                    {
+                        if(iPreProcess856Record != null)
+                        {
+                            if(!iPreProcess856Record.OnPreProcess856Record(selectedRecord.DeliveryLine, selectedRecord.Edi850Record))
+                            {
+                                continue;
+                            }
+                        }
+                        Edi856Record record = new Edi856Record();
+                        response.Edi856Records.Add(record);
+
+                        record.BuyerItemCode = selectedRecord.Edi850Record.BuyerItemCode;
+                        record.BuyerName = selectedRecord.Edi850Record.BuyerName;
+                        record.CardCode = selectedRecord.Edi850Record.CardCode;
+                        record.CarrierCode = selectedRecord.Edi850Record.CarrierCode;
+                        record.ConditionDescription = selectedRecord.Edi850Record.ConditionDescription;
+                        record.DeliveryPhoneNumber = selectedRecord.Edi850Record.DeliveryPhoneNumber;
+                        record.Department = selectedRecord.Edi850Record.Department;
+                        record.ItemDescription = selectedRecord.Edi850Record.ItemDescription;
+
+                        record.PaymentMethod = selectedRecord.Edi850Record.PaymentMethod;
+                        record.PromotionChargeCode = selectedRecord.Edi850Record.PromotionChargeCode;
+                        record.PurchaseOrderDate = selectedRecord.Edi850Record.PurchaseOrderDate;
+                        record.PurchaseOrderReference = selectedRecord.Edi850Record.PurchaseOrderReference;
+                        record.Quantity = selectedRecord.Edi850Record.Quantity;
+                        record.ReplenishmentNumber = selectedRecord.Edi850Record.ReplenishmentNumber;
+                        record.RequestedDeliveryDate = selectedRecord.Edi850Record.RequestedDeliveryDate;
+                        record.RequestedShipDate = selectedRecord.Edi850Record.RequestedShipDate;
+                        record.ShipToAddress1 = selectedRecord.Edi850Record.ShipToAddress1;
+                        record.ShipToAddress2 = selectedRecord.Edi850Record.ShipToAddress2;
+                        record.ShipToAttention = selectedRecord.Edi850Record.ShipToAttention;
+                        record.ShipToCity = selectedRecord.Edi850Record.ShipToCity;
+                        record.ShipToCountry = selectedRecord.Edi850Record.ShipToCountry;
+                        record.ShipToLocationCode = selectedRecord.Edi850Record.ShipToLocationCode;
+                        record.ShipToName = selectedRecord.Edi850Record.ShipToName;
+                        record.ShipToState = selectedRecord.Edi850Record.ShipToState;
+                        record.ShipToZip = selectedRecord.Edi850Record.ShipToZip;
+                        record.TruckLoadNumber = selectedRecord.Edi850Record.TruckLoadNumber;
+                        record.UnitOfMeasure = selectedRecord.Edi850Record.UnitOfMeasure;
+                        record.VendorItemCode = selectedRecord.Edi850Record.VendorItemCode;
+                        record.VendorNumber = selectedRecord.Edi850Record.VendorNumber;
+
+                        /* Must figure these out */
+                        record.AsnShipDate = selectedRecord.DeliveryLine.ShipDate;
+                        record.BillOfLading = String.Empty;    // JBB, Must figure this one out.
+                        record.NumberOfBags = 0; // JBB, Must figure this one out.
+                        record.NumberOfCartons = 0; // JBB, Must figure this one out.
+                        record.NumberOfPallets = 0; // JBB, Must figure this one out.
+                        record.PalletSerialNumber = String.Empty; // JBB, Must figure this one out.
+                        record.TransportationMethod = String.Empty; // JBB, Must figure this one out.
+                        if(iPostProcess856Record != null)
+                        {
+                            iPostProcess856Record.OnPostProcess856Record(selectedRecord.DeliveryLine, selectedRecord.Edi850Record, record);
+                        }
+                        /* End Figure */
+
+                        /* Must get these from the Line Level */
+                        record.LineNumber = selectedRecord.Edi850Record.LineNumber; // JBB Must get this from delivery line
+                        record.Quantity = selectedRecord.Edi850Record.Quantity; // JBB Must get this from the delivery line
+                        record.QuantityShipped = Convert.ToDouble(selectedRecord.DeliveryLine.Quantity);     // JBB Must get this from the delivery line
+                                                                                                             /* End Get From Line Level*/
+                    }
+                    catch(Exception ex)
+                    {
+                        _logger.Error(ex);
+                        selectedRecord.IsError = true;
+                        selectedRecord.ErrorMessage = ex.Message;
+                    }
+                }
+                DateTime now = DateTime.Now;
+                using(WebApiDbContext dbContext = new WebApiDbContext())
+                {
+                    foreach(var selectedRecord in listToProcess)
+                    {
+                        var recordToUpdate = (from v in dbContext.Edi850Records
+                                              where v.RecordKey == selectedRecord.Edi850Record.RecordKey
+                                              select v).FirstOrDefault();
+                        if(recordToUpdate == null)
+                        {
+                            throw new WebApiException("No 850 record found with key " + selectedRecord.Edi850Record.RecordKey);
+                        }
+                        if(selectedRecord.IsError)
+                        {
+                            recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;
+                            recordToUpdate.Processed856 = false;
+                        }
+                        else
+                        {
+                            recordToUpdate.Processed856 = true;
+                            recordToUpdate.Processed856DateTime = now;
+                            recordToUpdate.ErrorMessage = String.Empty;
+                        }
+                    }
+                    dbContext.SaveChanges();
+                }
+                response.Successful = true;
+            }
+            catch(Exception ex)
+            {
+                response.Successful = false;
+                _logger.Error(ex);
+                response.ErrorMessage = ex.Message;
+            }
+            _logger.Debug("Returning the following response object:");
+            //_logger.Debug("{@Get856RecordsResponse}", response);
+            _logger.Debug("Leaving Get856Records");
+            return response;
+        }
+
+        private IPreProcess856Record Get856PreProcess(String cardCode)
+        {
+            String preProcess856Record = ConfigurationManager.AppSettings["PreProcess856Record-" + cardCode];
+            if(String.IsNullOrWhiteSpace(preProcess856Record))
+            {
+                preProcess856Record = ConfigurationManager.AppSettings["PreProcess856Record"];
+            }
+            if(!String.IsNullOrWhiteSpace(preProcess856Record))
+            {
+                try
+                {
+                    IPreProcess856Record iPreProcess856Record = (IPreProcess856Record)Activator.CreateInstance(Type.GetType(preProcess856Record, true));
+                    return iPreProcess856Record;
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error("Could not instantiate IPreProcess856Record", ex);
+                    throw new WebApiException("Could not instantiate IPreProcess856Record. Reason: " + ex.Message);
+                }
+            }
+            return null;
+        }
+        private IPostProcess856Record Get856PostProcess(String cardCode)
+        {
+            String postProcess856Record = ConfigurationManager.AppSettings["PostProcess856Record-" + cardCode];
+            if(String.IsNullOrWhiteSpace(postProcess856Record))
+            {
+                postProcess856Record = ConfigurationManager.AppSettings["PostProcess856Record"];
+            }
+            if(!String.IsNullOrWhiteSpace(postProcess856Record))
+            {
+                try
+                {
+                    IPostProcess856Record iPostProcess856Record = (IPostProcess856Record)Activator.CreateInstance(Type.GetType(postProcess856Record, true));
+                    return iPostProcess856Record;
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error("Could not instantiate IPostProcess856Record", ex);
+                    throw new WebApiException("Could not instantiate IPostProcess856Record. Reason: " + ex.Message);
+                }
+            }
+            return null;
+        }
+        private DeliveryLine FindMatchingDelivery(WebApiDbContext context, Edi850Record record)
+        {
+            return (from v in context.DeliveryLines.Include("Delivery")
+                    where v.BaseType == 17
+                        && v.BaseEntry == record.SalesOrderKey
+                        && v.LineNumber850 == record.LineNumber
+                        && v.Delivery.Canceled == "N"
+                    select v).FirstOrDefault();
+        }
+        // Begin 810
+
+        [HttpPost]
+        public Get810RecordsResponse Get810Records(Get810RecordsRequest request)
+        {
+            IPreProcess810Record iPreProcess810Record = null;
+            IPostProcess810Record iPostProcess810Record = null;
+            List<Edi850WithInvoiceLine> listToProcess = new List<Edi850WithInvoiceLine>();
+            _logger.Debug("Entering Get810Records");
+            _logger.Debug("Processing the following request object:");
+            //_logger.Debug("{@Get810RecordRequest}", request);
+            Get810RecordsResponse response = new Get810RecordsResponse();
+            if(!this.Authorize(request))
+            {
+                response.ErrorMessage = "Authentication information is invalid";
+                response.Successful = false;
+                return response;
+            }
+            if(String.IsNullOrWhiteSpace(request.CardCode))
+            {
+                response.ErrorMessage = "Card Code is required for Get810Records";
+                response.Successful = false;
+                return response;
+            }
+            try
+            {
+                iPreProcess810Record = Get810PreProcess(request.CardCode);
+                iPostProcess810Record = Get810PostProcess(request.CardCode);
+                List<Edi850Record> listOf850Records = null;
+                using(WebApiDbContext dbContext = new WebApiDbContext())
+                {
+                    listOf850Records = dbContext.Edi850Records
+                        .Where(x => x.Processed810 == false
+                            && x.Processed == true
+                            && x.Processed856 == true
+                            && x.CardCode == request.CardCode
+                            && x.SalesOrderKey > 0).ToList();
+                    _logger.Debug("There are " + listOf850Records.Count + " 810 records to process");
+                    foreach(var record in listOf850Records)
+                    {
+                        _logger.Debug("Processing 810 with 850 Key " + record.RecordKey);
+                        InvoiceLine invoiceLine = FindMatchingInvoice(dbContext, record);
+                        if(invoiceLine != null)
+                        {
+                            _logger.Debug("Found 810 invoice line from delivery with key " + invoiceLine.DocEntry);
+                            listToProcess.Add(new Edi850WithInvoiceLine(record, invoiceLine));
+                        }
+                        else
+                        {
+                            _logger.Debug("810 invoice line not found for 850 record with key " + record.RecordKey);
+                        }
+                    }
+                }
+                if(listToProcess.Count == 0)
+                {
+                    response.Successful = true;
+                    return response;
+                }
+                using(SqlConnection sqlConnection = new SqlConnection(GetConnectionString()))
+                {
+                    sqlConnection.Open();
+                    //To do -Need to filter records, but not sure how to right now
+                    foreach(var selectedRecord in listToProcess)
+                    {
+                        try
+                        {
+                            if(iPreProcess810Record != null)
+                            {
+                                if(!iPreProcess810Record.OnPreProcess810Record(selectedRecord.InvoiceLine, selectedRecord.Edi850Record))
+                                {
+                                    continue;
+                                }
+                            }
+                            Edi810Record record = new Edi810Record();
+                            response.Edi810Records.Add(record);
+
+                            record.BuyerItemCode = selectedRecord.Edi850Record.BuyerItemCode;
+                            record.BuyerName = selectedRecord.Edi850Record.BuyerName;
+                            record.CardCode = selectedRecord.Edi850Record.CardCode;
+                            record.CarrierCode = selectedRecord.Edi850Record.CarrierCode;
+                            record.ConditionDescription = selectedRecord.Edi850Record.ConditionDescription;
+                            record.DeliveryPhoneNumber = selectedRecord.Edi850Record.DeliveryPhoneNumber;
+                            record.Department = selectedRecord.Edi850Record.Department;
+                            record.ItemDescription = selectedRecord.Edi850Record.ItemDescription;
+
+                            record.PaymentMethod = selectedRecord.Edi850Record.PaymentMethod;
+                            record.PromotionChargeCode = selectedRecord.Edi850Record.PromotionChargeCode;
+                            record.PurchaseOrderDate = selectedRecord.Edi850Record.PurchaseOrderDate;
+                            record.PurchaseOrderReference = selectedRecord.Edi850Record.PurchaseOrderReference;
+                            record.Quantity = selectedRecord.Edi850Record.Quantity;
+                            record.ReplenishmentNumber = selectedRecord.Edi850Record.ReplenishmentNumber;
+                            record.RequestedDeliveryDate = selectedRecord.Edi850Record.RequestedDeliveryDate;
+                            record.RequestedShipDate = selectedRecord.Edi850Record.RequestedShipDate;
+                            record.ShipToAddress1 = selectedRecord.Edi850Record.ShipToAddress1;
+                            record.ShipToAddress2 = selectedRecord.Edi850Record.ShipToAddress2;
+                            record.ShipToAttention = selectedRecord.Edi850Record.ShipToAttention;
+                            record.ShipToCity = selectedRecord.Edi850Record.ShipToCity;
+                            record.ShipToCountry = selectedRecord.Edi850Record.ShipToCountry;
+                            record.ShipToLocationCode = selectedRecord.Edi850Record.ShipToLocationCode;
+                            record.ShipToName = selectedRecord.Edi850Record.ShipToName;
+                            record.ShipToState = selectedRecord.Edi850Record.ShipToState;
+                            record.ShipToZip = selectedRecord.Edi850Record.ShipToZip;
+                            record.TruckLoadNumber = selectedRecord.Edi850Record.TruckLoadNumber;
+                            record.UnitOfMeasure = selectedRecord.Edi850Record.UnitOfMeasure;
+                            record.VendorItemCode = selectedRecord.Edi850Record.VendorItemCode;
+                            record.VendorNumber = selectedRecord.Edi850Record.VendorNumber;
+                            record.LineNumber = selectedRecord.Edi850Record.LineNumber;
+                            record.Quantity = selectedRecord.Edi850Record.Quantity;
+
+                            /* Must figure these out */
+                            record.FinalShipToLocation = String.Empty;
+                            record.BillOfLading = selectedRecord.InvoiceLine.Invoice.TrackNo;
+                            String groupNumSql = String.Format(PaymentGroupQuery, selectedRecord.InvoiceLine.Invoice.GroupNum);
+                            _logger.Debug("Executing SQL: " + groupNumSql);
+                            using(SqlCommand command = new SqlCommand(groupNumSql, sqlConnection))
+                            {
+                                using(SqlDataReader reader = command.ExecuteReader())
+                                {
+                                    if(!reader.Read())
+                                    {
+                                        throw new WebApiException("Could not locate Payment Group with GroupNum " + selectedRecord.InvoiceLine.Invoice.TrackNo);
+                                    }
+                                    record.TermsDescription = (String)reader["PymntGroup"];
+                                    record.NetDaysDue = (Int16)reader["ExtraDays"];
+                                }
+                            }
+                            record.TermsType = String.Empty;
+
+                            record.TotalDue = Convert.ToDouble(selectedRecord.InvoiceLine.Invoice.DocTotal);
+                            record.ShipmentPaymentMethod = record.PaymentMethod;
+                            record.CarrierName = String.Empty;
+                            record.QuantityShipped = Convert.ToDouble(selectedRecord.InvoiceLine.Quantity);
+                            record.UnitPrice = Convert.ToDouble(selectedRecord.InvoiceLine.Price);
+                            record.FreightCharge = Convert.ToDouble(selectedRecord.InvoiceLine.Invoice.TotalExpns);
+                            if(selectedRecord.InvoiceLine.Invoice.TrnspCode > 0)
+                            {
+                                String shipmentSql = String.Format(ShipmentQuery, selectedRecord.InvoiceLine.Invoice.TrnspCode);
+                                _logger.Debug("Executing SQL: " + shipmentSql);
+                                using(SqlCommand command = new SqlCommand(shipmentSql, sqlConnection))
+                                {
+                                    using(SqlDataReader reader = command.ExecuteReader())
+                                    {
+                                        if(!reader.Read())
+                                        {
+                                            throw new WebApiException("Could not locate OSHP with TrnspCode " + selectedRecord.InvoiceLine.Invoice.TrnspCode);
+                                        }
+                                        record.CarrierName = (String)reader[0];
+                                    }
+                                }
+                            }
+                            if(iPostProcess810Record != null)
+                            {
+                                iPostProcess810Record.OnPostProcess810Record(selectedRecord.InvoiceLine, selectedRecord.Edi850Record, record);
+                            }
+                            /* End Figure */
+                        }
+                        catch(Exception ex)
+                        {
+                            _logger.Error(ex);
+                            selectedRecord.IsError = true;
+                            selectedRecord.ErrorMessage = ex.Message;
+                        }
+                    }
+                    sqlConnection.Close();
+                }
+                DateTime now = DateTime.Now;
+                using(WebApiDbContext dbContext = new WebApiDbContext())
+                {
+                    foreach(var selectedRecord in listToProcess)
+                    {
+                        var recordToUpdate = (from v in dbContext.Edi850Records
+                                              where v.RecordKey == selectedRecord.Edi850Record.RecordKey
+                                              select v).FirstOrDefault();
+                        if(recordToUpdate == null)
+                        {
+                            throw new WebApiException("No 850 record found with key " + selectedRecord.Edi850Record.RecordKey);
+                        }
+                        if(selectedRecord.IsError)
+                        {
+                            recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;
+                            recordToUpdate.Processed810 = false;
+                        }
+                        else
+                        {
+                            recordToUpdate.Processed810 = true;
+                            recordToUpdate.Processed810DateTime = now;
+                            recordToUpdate.ErrorMessage = String.Empty;
+                        }
+                    }
+                    dbContext.SaveChanges();
+                }
+                response.Successful = true;
+            }
+            catch(Exception ex)
+            {
+                response.Successful = false;
+                _logger.Error(ex);
+                response.ErrorMessage = ex.Message;
+            }
+            _logger.Debug("Returning the following response object:");
+            //_logger.Debug("{@Get810RecordsResponse}", response);
+            _logger.Debug("Leaving Get810Records");
+            return response;
+        }
+
+        private IPreProcess810Record Get810PreProcess(String cardCode)
+        {
+            String preProcess810Record = ConfigurationManager.AppSettings["PreProcess810Record-" + cardCode];
+            if(String.IsNullOrWhiteSpace(preProcess810Record))
+            {
+                preProcess810Record = ConfigurationManager.AppSettings["PreProcess810Record"];
+            }
+            if(!String.IsNullOrWhiteSpace(preProcess810Record))
+            {
+                try
+                {
+                    IPreProcess810Record iPreProcess810Record = (IPreProcess810Record)Activator.CreateInstance(Type.GetType(preProcess810Record, true));
+                    return iPreProcess810Record;
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error("Could not instantiate IPreProcess810Record", ex);
+                    throw new WebApiException("Could not instantiate IPreProcess810Record. Reason: " + ex.Message);
+                }
+            }
+            return null;
+        }
+
+        private IPostProcess810Record Get810PostProcess(String cardCode)
+        {
+            String postProcess810Record = ConfigurationManager.AppSettings["PostProcess810Record-" + cardCode];
+            if(String.IsNullOrWhiteSpace(postProcess810Record))
+            {
+                postProcess810Record = ConfigurationManager.AppSettings["PostProcess810Record"];
+            }
+            if(!String.IsNullOrWhiteSpace(postProcess810Record))
+            {
+                try
+                {
+                    IPostProcess810Record iPostProcess810Record = (IPostProcess810Record)Activator.CreateInstance(Type.GetType(postProcess810Record, true));
+                    return iPostProcess810Record;
+                }
+                catch(Exception ex)
+                {
+                    _logger.Error("Could not instantiate IPostProcess810Record", ex);
+                    throw new WebApiException("Could not instantiate IPostProcess810Record. Reason: " + ex.Message);
+                }
+            }
+            return null;
+        }
+        private InvoiceLine FindMatchingInvoice(WebApiDbContext context, Edi850Record record)
+        {
+            var deliveryLine = FindMatchingDelivery(context, record);
+            if(deliveryLine == null)
+            {
+                return null;
+            }
+            return (from v in context.InvoiceLines.Include("Invoice")
+                    where v.BaseType == 15
+                        && v.BaseEntry == deliveryLine.DocEntry
+                        && v.LineNumber850 == record.LineNumber
+                        && v.Invoice.Canceled == "N"
+                    select v).FirstOrDefault();
+        }
+        // End 810
+        public String GetConnectionString()
+        {
+            if(ConfigurationManager.ConnectionStrings["WebApiDbContext"] == null)
+            {
+                String msg = "No WebApiDbContext connection string found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+
+            String connectionString = ConfigurationManager.ConnectionStrings["WebApiDbContext"].ConnectionString;
+            if(String.IsNullOrWhiteSpace(connectionString))
+            {
+                String msg = "Invalid WebApiDbContext connection string found in Web.config";
+                _logger.Error(msg);
+                throw new WebApiException(msg);
+            }
+            return connectionString;
+        }
+        [HttpPost]
+        public Add850RecordResponse Add850Record(Add850RecordRequest request)
+        {
+            _logger.Debug("Entering Add850Record");
+            _logger.Debug("Processing the following request object:");
+            //_logger.Debug("{@Add850RecordRequest}", request);
+            Add850RecordResponse response = new Add850RecordResponse();
+            if(!this.Authorize(request))
+            {
+                response.ErrorMessage = "Authentication information is invalid";
+                response.Successful = false;
+                return response;
+            }
+            try
+            {
+                using(WebApiDbContext dbContext = new WebApiDbContext())
+                {
+                    request.Edi850Record.RecordDate = DateTime.Now;
+                    request.Edi850Record.Processed = false;
+                    request.Edi850Record.Processed810 = false;
+                    request.Edi850Record.Processed856 = false;
+                    request.Edi850Record.SalesOrderKey = 0; 
+                    request.Edi850Record.ReceivedDateTime = DateTime.Now;
+                    request.Edi850Record.Processed810DateTime = null;
+                    request.Edi850Record.Processed856DateTime = null;
+                    request.Edi850Record.ProcessedDateTime = null;
+                    request.Edi850Record.ErrorMessage = String.Empty;
+                    dbContext.Edi850Records.Add(request.Edi850Record);
+                    dbContext.SaveChanges();
+                }
+                response.Successful = true;
+                response.ErrorMessage = String.Empty;
+            }
+            catch(Exception ex)
+            {
+                response.Successful = false;
+                _logger.Error("Error during Add850Record", ex);
+                response.ErrorMessage = ex.Message;
+            }
+            _logger.Debug("Returning the following response object:");
+            //_logger.Debug("{@Add850RecordResponse}", response);
+            _logger.Debug("Leaving Add850Record");
+            return response;
+        }
+
+        [HttpGet]
+        public Add850RecordRequest GetExampleAdd850RecordRequest()
+        {
+            _logger.Debug("Entering GetExampleAdd850RecordRequest");
+
+            Add850RecordRequest add850RecordRequest = new Add850RecordRequest();
+            add850RecordRequest.SecurityInformation.UserName = "user1";
+            add850RecordRequest.SecurityInformation.Password = "password1";
+            add850RecordRequest.Edi850Record.BuyerItemCode = "BP00001";
+            add850RecordRequest.Edi850Record.BuyerName = "JEFF FISH";
+            add850RecordRequest.Edi850Record.CardCode = "C20000";
+            add850RecordRequest.Edi850Record.CarrierCode = "FDEG";
+            add850RecordRequest.Edi850Record.ConditionDescription = "TEST CONDITION DESCRIPTION";
+            add850RecordRequest.Edi850Record.DeliveryPhoneNumber = "(336) 838-1500";
+            add850RecordRequest.Edi850Record.Department = "PLBR";
+            add850RecordRequest.Edi850Record.ItemDescription = "HEOS 3 BLACK WIFI SPEAKER";
+            add850RecordRequest.Edi850Record.LineNumber = 1;
+            add850RecordRequest.Edi850Record.PaymentMethod = "PP";
+            add850RecordRequest.Edi850Record.PromotionChargeCode = String.Empty;
+            add850RecordRequest.Edi850Record.PurchaseOrderDate = DateTime.Today;
+            add850RecordRequest.Edi850Record.PurchaseOrderReference = "26273167";
+            add850RecordRequest.Edi850Record.Quantity = 1;
+            add850RecordRequest.Edi850Record.ReplenishmentNumber = "31623";
+            add850RecordRequest.Edi850Record.RequestedDeliveryDate = DateTime.Today.AddDays(5);
+            add850RecordRequest.Edi850Record.RequestedShipDate = DateTime.Today.AddDays(6);
+            add850RecordRequest.Edi850Record.ShipToAddress1 = "2003 W US HIGHWAY 421";
+            add850RecordRequest.Edi850Record.ShipToAddress2 = String.Empty;
+            add850RecordRequest.Edi850Record.ShipToCity = "WILKESBORO";
+            add850RecordRequest.Edi850Record.ShipToCountry = "USA";
+            add850RecordRequest.Edi850Record.ShipToLocationCode = "701";
+            add850RecordRequest.Edi850Record.ShipToName = "LOWE'S OF WILKESBORO, NC";
+            add850RecordRequest.Edi850Record.ShipToState = "NC";
+            add850RecordRequest.Edi850Record.ShipToZip = "28697";
+            add850RecordRequest.Edi850Record.TruckLoadNumber = String.Empty;
+            add850RecordRequest.Edi850Record.UnitOfMeasure = "EA";
+            add850RecordRequest.Edi850Record.VendorItemCode = "A00001";
+            add850RecordRequest.Edi850Record.VendorNumber = "53777";
+            add850RecordRequest.Edi850Record.UnitPrice = 10.50;
+            _logger.Debug("Returning the following object:");
+            //_logger.Debug("{@Add850RecordRequest}", add850RecordRequest);
+            return add850RecordRequest;
+        }
+        [HttpGet]
+        public Add850RecordResponse GetExampleAdd850RecordResponse()
+        {
+            _logger.Debug("Entering GetExampleAdd850RecordResponse");
+
+            Add850RecordResponse add850RecordResponse = new Add850RecordResponse();
+            add850RecordResponse.ErrorMessage = String.Empty;
+            add850RecordResponse.Successful = true;
+            _logger.Debug("Returning the following object:");
+            //_logger.Debug("{@Add850RecordResponse}", add850RecordResponse);
+            return add850RecordResponse;
+        }
+
+        [HttpGet]
+        public Get856RecordsRequest GetExampleGet856RecordsRequest()
+        {
+            _logger.Debug("Entering GetExampleGet856RecordsRequest");
+
+            Get856RecordsRequest get856RecordRequest = new Get856RecordsRequest();
+            get856RecordRequest.CardCode = "C20000";
+            get856RecordRequest.SecurityInformation.UserName = "user1";
+            get856RecordRequest.SecurityInformation.Password = "password1";
+            _logger.Debug("Returning the following object:");
+            //_logger.Debug("{@Get856RecordsRequest}", get856RecordRequest);
+            return get856RecordRequest;
+        }
+
+        [HttpGet]
+        public Get856RecordsResponse GetExampleGet856RecordsResponse()
+        {
+            _logger.Debug("Entering GetExampleGet856RecordsResponse");
+
+            Get856RecordsResponse get856RecordsResponse = new Get856RecordsResponse();
+            get856RecordsResponse.Successful = true;
+            List<Edi856Record> list = new List<Edi856Record>();
+            get856RecordsResponse.Edi856Records = list;
+            Edi856Record record1 = new Edi856Record();
+            record1.BuyerItemCode = "BP00001";
+            record1.BuyerName = "JEFF FISH";
+            record1.CardCode = "C20000";
+            record1.CarrierCode = "FDEG";
+            record1.ConditionDescription = "TEST CONDITION DESCRIPTION";
+            record1.DeliveryPhoneNumber = "(336) 838-1500";
+            record1.Department = "PLBR";
+            record1.ItemDescription = "HEOS 3 BLACK WIFI SPEAKER";
+            record1.LineNumber = 1;
+            record1.PaymentMethod = "PP";
+            record1.PromotionChargeCode = String.Empty;
+            record1.PurchaseOrderDate = DateTime.Today;
+            record1.PurchaseOrderReference = "26273167";
+            record1.Quantity = 1;
+            record1.ReplenishmentNumber = "31623";
+            record1.RequestedDeliveryDate = DateTime.Today.AddDays(5);
+            record1.RequestedShipDate = DateTime.Today.AddDays(6);
+            record1.ShipToAddress1 = "2003 W US HIGHWAY 421";
+            record1.ShipToAddress2 = String.Empty;
+            record1.ShipToCity = "WILKESBORO";
+            record1.ShipToCountry = "USA";
+            record1.ShipToLocationCode = "701";
+            record1.ShipToName = "LOWE'S OF WILKESBORO, NC";
+            record1.ShipToState = "NC";
+            record1.ShipToZip = "28697";
+            record1.TruckLoadNumber = String.Empty;
+            record1.UnitOfMeasure = "EA";
+            record1.VendorItemCode = "A00001";
+            record1.VendorNumber = "53777";
+            record1.BillOfLading = "123456";
+            record1.NumberOfBags = 0;
+            record1.NumberOfCartons = 1;
+            record1.NumberOfPallets = 1;
+            record1.PalletSerialNumber = "987654321";
+            record1.AsnShipDate = DateTime.Today;
+            record1.QuantityShipped = 1;
+            
+            list.Add(record1);
+
+            Edi856Record record2 = new Edi856Record();
+            record2.BuyerItemCode = "BP00002";
+            record2.BuyerName = "JEFF FISH";
+            record2.CardCode = "C20000";
+            record2.CarrierCode = "FDEG";
+            record2.ConditionDescription = "TEST CONDITION DESCRIPTION";
+            record2.DeliveryPhoneNumber = "(336) 838-1500";
+            record2.Department = "PLBR";
+            record2.ItemDescription = "HEOS 3 WHITE WIFI SPEAKER";
+            record2.LineNumber = 1;
+            record2.PaymentMethod = "PP";
+            record2.PromotionChargeCode = String.Empty;
+            record2.PurchaseOrderDate = DateTime.Today;
+            record2.PurchaseOrderReference = "26273168";
+            record2.Quantity = 2;
+            record2.ReplenishmentNumber = "31623";
+            record2.RequestedDeliveryDate = DateTime.Today.AddDays(5);
+            record2.RequestedShipDate = DateTime.Today.AddDays(6);
+            record2.ShipToAddress1 = "2003 W US HIGHWAY 421";
+            record2.ShipToAddress2 = String.Empty;
+            record2.ShipToCity = "WILKESBORO";
+            record2.ShipToCountry = "USA";
+            record2.ShipToLocationCode = "701";
+            record2.ShipToName = "LOWE'S OF WILKESBORO, NC";
+            record2.ShipToState = "NC";
+            record2.ShipToZip = "28697";
+            record2.TruckLoadNumber = String.Empty;
+            record2.UnitOfMeasure = "EA";
+            record2.VendorItemCode = "A00002";
+            record2.VendorNumber = "53777";
+
+            record2.BillOfLading = "123457";
+            record2.NumberOfBags = 0;
+            record2.NumberOfCartons = 1;
+            record2.NumberOfPallets = 1;
+            record2.PalletSerialNumber = "987654322";
+            record2.AsnShipDate = DateTime.Today;
+            record2.QuantityShipped = 1;
+
+            list.Add(record2);
+
+            _logger.Debug("Returning the following object:");
+            //_logger.Debug("{@Get856RecordsResponse}", get856RecordsResponse);
+            return get856RecordsResponse;
+        }
+        [HttpGet]
+        public Get810RecordsResponse GetExampleGet810RecordsResponse()
+        {
+            _logger.Debug("Entering GetExampleGet810RecordsResponse");
+
+            Get810RecordsResponse get810RecordsResponse = new Get810RecordsResponse();
+            get810RecordsResponse.Successful = true;
+            List<Edi810Record> list = new List<Edi810Record>();
+            get810RecordsResponse.Edi810Records = list;
+            Edi810Record record1 = new Edi810Record();
+            record1.BuyerItemCode = "BP00001";
+            record1.BuyerName = "JEFF FISH";
+            record1.CardCode = "C20000";
+            record1.CarrierCode = "FDEG";
+            record1.ConditionDescription = "TEST CONDITION DESCRIPTION";
+            record1.DeliveryPhoneNumber = "(336) 838-1500";
+            record1.Department = "PLBR";
+            record1.ItemDescription = "HEOS 3 BLACK WIFI SPEAKER";
+            record1.LineNumber = 1;
+            record1.PaymentMethod = "PP";
+            record1.PromotionChargeCode = String.Empty;
+            record1.PurchaseOrderDate = DateTime.Today;
+            record1.PurchaseOrderReference = "26273167";
+            record1.Quantity = 1;
+            record1.ReplenishmentNumber = "31623";
+            record1.RequestedDeliveryDate = DateTime.Today.AddDays(5);
+            record1.RequestedShipDate = DateTime.Today.AddDays(6);
+            record1.ShipToAddress1 = "2003 W US HIGHWAY 421";
+            record1.ShipToAddress2 = String.Empty;
+            record1.ShipToCity = "WILKESBORO";
+            record1.ShipToCountry = "USA";
+            record1.ShipToLocationCode = "701";
+            record1.ShipToName = "LOWE'S OF WILKESBORO, NC";
+            record1.ShipToState = "NC";
+            record1.ShipToZip = "28697";
+            record1.TruckLoadNumber = String.Empty;
+            record1.UnitOfMeasure = "EA";
+            record1.VendorItemCode = "A00001";
+            record1.VendorNumber = "53777";
+            record1.TermsType = String.Empty;
+            record1.TermsDescription = "NET 120";
+            record1.NetDaysDue = 120;
+            record1.TotalDue = 1000;
+            record1.ShipmentPaymentMethod = "PP";
+            record1.BillOfLading = "123456";
+            record1.CarrierName = "TRUCK CARRIER";
+            record1.UnitPrice = 200;
+            record1.QuantityShipped = 1;
+            list.Add(record1);
+
+            Edi810Record record2 = new Edi810Record();
+            record2.BuyerItemCode = "BP00002";
+            record2.BuyerName = "JEFF FISH";
+            record2.CardCode = "C20000";
+            record2.CarrierCode = "FDEG";
+            record2.ConditionDescription = "TEST CONDITION DESCRIPTION";
+            record2.DeliveryPhoneNumber = "(336) 838-1500";
+            record2.Department = "PLBR";
+            record2.ItemDescription = "HEOS 3 WHITE WIFI SPEAKER";
+            record2.LineNumber = 1;
+            record2.PaymentMethod = "PP";
+            record2.PromotionChargeCode = String.Empty;
+            record2.PurchaseOrderDate = DateTime.Today;
+            record2.PurchaseOrderReference = "26273168";
+            record2.Quantity = 2;
+            record2.ReplenishmentNumber = "31623";
+            record2.RequestedDeliveryDate = DateTime.Today.AddDays(5);
+            record2.RequestedShipDate = DateTime.Today.AddDays(6);
+            record2.ShipToAddress1 = "2003 W US HIGHWAY 421";
+            record2.ShipToAddress2 = String.Empty;
+            record2.ShipToCity = "WILKESBORO";
+            record2.ShipToCountry = "USA";
+            record2.ShipToLocationCode = "701";
+            record2.ShipToName = "LOWE'S OF WILKESBORO, NC";
+            record2.ShipToState = "NC";
+            record2.ShipToZip = "28697";
+            record2.TruckLoadNumber = String.Empty;
+            record2.UnitOfMeasure = "EA";
+            record2.VendorItemCode = "A00002";
+            record2.VendorNumber = "53777";
+            record2.TermsType = String.Empty;
+            record2.TermsDescription = "NET 120";
+            record2.NetDaysDue = 120;
+            record2.TotalDue = 1000;
+            record2.ShipmentPaymentMethod = "PP";
+            record2.BillOfLading = "123456";
+            record2.CarrierName = "TRUCK CARRIER";
+            record2.UnitPrice = 400;
+            record2.QuantityShipped = 2;
+            list.Add(record2);
+
+            _logger.Debug("Returning the following object:");
+            //_logger.Debug("{@Get856RecordsResponse}", get810RecordsResponse);
+            return get810RecordsResponse;
+        }
+    }
+
+    public class Edi850WithDeliveryLine
+    {
+        public Edi850WithDeliveryLine()
+        {
+
+        }
+        public Edi850WithDeliveryLine(Edi850Record record, DeliveryLine deliveryLine)
+        {
+            Edi850Record = record;
+            DeliveryLine = deliveryLine;
+        }
+        public Edi850Record Edi850Record
+        {
+            get;
+            set;
+        }
+        public DeliveryLine DeliveryLine
+        {
+            get;
+            set;
+        }
+        public bool IsError
+        {
+            get;
+            set;
+        }
+        public String ErrorMessage
+        {
+            get;
+            set;
+        }
+    }
+    public class Edi850WithInvoiceLine
+    {
+        public Edi850WithInvoiceLine()
+        {
+
+        }
+        public Edi850WithInvoiceLine(Edi850Record record, InvoiceLine invoiceLine)
+        {
+            Edi850Record = record;
+            InvoiceLine = invoiceLine;
+        }
+        public Edi850Record Edi850Record
+        {
+            get;
+            set;
+        }
+        public InvoiceLine InvoiceLine
+        {
+            get;
+            set;
+        }
+        public bool IsError
+        {
+            get;
+            set;
+        }
+        public String ErrorMessage
+        {
+            get;
+            set;
+        }
+    }
+}

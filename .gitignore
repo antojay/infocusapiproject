@@ -1,0 +1,26 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.nuget
+/.vs
+/Infocus.Common/.vs
+/Infocus.Common/bin/x64/Debug
+/Infocus.Common/obj
+/Infocus.Edi.AutoProcess/.vs
+/Infocus.Edi.AutoProcess/bin/x64/Debug
+/Infocus.Edi.AutoProcess/bin/x64/Debug/log4net.xml
+/Infocus.Edi.AutoProcess/obj/x64
+/Infocus.Edi.Bone/.vs
+/Infocus.Edi.Bone/bin
+/Infocus.Edi.Bone/obj/x64
+/Infocus.WebApi/.vs
+/Infocus.WebApi/bin
+/Infocus.WebApi.Common/.vs
+/Infocus.WebApi.Common/bin
+/Infocus.WebApi.Common/obj
+/Infocus.WebApi.Data/.vs
+/Infocus.WebApi.Data/bin/Debug
+/Infocus.WebApi.Data/bin/Release
+/Infocus.WebApi.Data/obj
+/packages

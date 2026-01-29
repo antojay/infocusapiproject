@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Actions rollbackOnError="true">
+	<CreateUdf active="true" deleteIfExists="false" tableName="ORDR">
+		<Fields>
+      <Field name="InfoW2ShNm" description="EDI Ship To Name" fieldType="Alpha" size="75" />
+		</Fields>
+	</CreateUdf>
+  <CreateUdf active="true" deleteIfExists="false" tableName="ORDR">
+    <Fields>
+      <Field name="InfoW2ShAt" description="EDI Ship To Attention" fieldType="Alpha" size="75" />
+    </Fields>
+  </CreateUdf>
+  <CreateUdf active="true" deleteIfExists="false" tableName="ORDR">
+    <Fields>
+      <Field name="InfoW2Paym" description="EDI Payment Method" fieldType="Alpha" size="100" />
+    </Fields>
+  </CreateUdf>
+  <CreateUdf active="true" deleteIfExists="false" tableName="RDR1">
+    <Fields>
+      <Field name="InfoW2LNo" description="EDI Line Number" fieldType="Numeric" subType="none" size="11"/>
+    </Fields>
+  </CreateUdf>
+</Actions>
