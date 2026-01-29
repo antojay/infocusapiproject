@@ -17,6 +17,7 @@
                     <span class="icon-bar"></span>
                 </button>
                 @Html.ActionLink("Application name", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                @Html.ActionLink("API", "Index", "Help", new { area = "" }, null)
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -35,7 +36,9 @@
     </div>
 
     @Scripts.Render("~/bundles/jquery")
-    @*Scripts.Render("~/bundles/bootstrap")*@
+    @*@Scripts.Render("~/bundles/bootstrap")*@
+    <script src="~/Scripts/bootstrap.min.js"></script>
+    <script src="~/Scripts/respond.js"></script>
     @RenderSection("scripts", required: false)
 </body>
 </html>
