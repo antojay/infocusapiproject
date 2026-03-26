@@ -5664,6 +5664,7 @@ where TrnspCode = {0}";
                         }
                     }
                 }
+                //Edi
 
                 if (listToProcess.Count == 0)
                 {
