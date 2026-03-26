@@ -37,6 +37,12 @@ namespace Infocus.WebApi.Common.Bone
             {
                 RecycleCompanyObject();
                 company = (Company)HttpContext.Current.Application[COMPANY_STATE_KEY];
+                // 03-17-2026 lrussell begin
+                if (company == null)
+                {
+                    throw new Exception("Unable to set company -- BusinessOneRuntimeContext line 39");
+                }
+                // 03-17-2026 lrussell end
             }
             else
             {
@@ -44,6 +50,12 @@ namespace Infocus.WebApi.Common.Bone
                 {
                     RecycleCompanyObject();
                     company = (Company)HttpContext.Current.Application[COMPANY_STATE_KEY];
+                    // 03-17-2026 lrussell begin
+                    if (company == null)
+                    {
+                        throw new Exception("Unable to set company -- BusinessOneRuntimeContext line 52");
+                    }
+                    // 03-17-2026 lrussell end
                 }
             }
             return company;
@@ -91,6 +103,12 @@ namespace Infocus.WebApi.Common.Bone
                     companyDb = (String)HttpContext.Current.Session[COMPANY_DATABASE_KEY];
                 }
                 Company company = LoadCompanyFromConfigurationFile(companyDb);
+                // 03-17-2026 lrussell begin
+                if (company == null)
+                {
+                    throw new Exception("Unable to recycle company -- BusinessOneRuntimeContext line 109");
+                }
+                // 03-17-2026 lrussell end
                 SetCompany(company);
             }
         }

@@ -332,6 +332,12 @@ namespace Infocus.WebApi.Common.Bone
                         if ((!edi940HeaderRecord.CardCode.ToUpper().StartsWith("TeeZed") && oIs3PL == "Y")
                             || oIs3PL == "N")
                         {
+                            // 03-24-2026 lrussell  begin
+                            if (String.IsNullOrWhiteSpace(edi940HeaderRecord.UserDefined03) || String.IsNullOrEmpty(edi940HeaderRecord.UserDefined03))
+                            {
+                                edi940HeaderRecord.UserDefined03 = string.Empty;
+                            }
+                            // 03-24-2026 lrussell end
                             // 07-07-2023 bValidPayment was not being set with result from checkPaymentType
                             bValidPayment = checkPaymentType(edi940HeaderRecord.HeaderId, edi940HeaderRecord.SBOCardCode, edi940HeaderRecord.UserDefined03, autoImport);
                         }
@@ -580,6 +586,9 @@ namespace Infocus.WebApi.Common.Bone
                                                     _logger.Debug("Error setting U_COR_ImpSrc: " + oErrMsg);
                                                 }
                                             }
+                                            // 03-24-2026 lrussell begin
+                                            // udf U_COR_SrcDoc not in database
+                                            /*
                                             // 09-08-2023 begin
                                             try
                                             {
@@ -598,6 +607,8 @@ namespace Infocus.WebApi.Common.Bone
                                                 }
                                             }
                                             // 09-08-2023 end
+                                            */
+                                            // 03-24-2026 lrussell end
                                             if (edi940HeaderRecord.RequestedShipDate.HasValue && edi940HeaderRecord.RequestedShipDate.Value > DateTime.MinValue)
                                             {
                                                 document.DocDueDate = edi940HeaderRecord.RequestedShipDate.Value;
@@ -1992,8 +2003,8 @@ namespace Infocus.WebApi.Common.Bone
                                 }
                                 else
                                 {
-                                   DateTime  reqDeliveryDate = edi850HeaderRecord.RequestedDeliveryDate.Value;
-                                   string dateString = reqDeliveryDate.ToString("dd/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
+                                    DateTime reqDeliveryDate = edi850HeaderRecord.RequestedDeliveryDate.Value;
+                                    string dateString = reqDeliveryDate.ToString("dd/M/yyyy", System.Globalization.CultureInfo.InvariantCulture);
                                     delDateString = "LowesNet Requested delivery date: " + dateString;
                                 }
                                 if (autoImport)
@@ -2072,6 +2083,13 @@ namespace Infocus.WebApi.Common.Bone
                             if ((!edi850HeaderRecord.CardCode.ToUpper().StartsWith("TeeZed") && oIs3PL == "Y")
                                 || oIs3PL == "N") // 01-27-2023
                             {
+                                // 03-24-2026 lrussell  begin
+                                if (String.IsNullOrWhiteSpace(edi850HeaderRecord.UserDefined03) || String.IsNullOrEmpty(edi850HeaderRecord.UserDefined03))
+                                {
+                                    edi850HeaderRecord.UserDefined03 = string.Empty;
+                                }
+                                // 03-24-2026 lrussell end
+
                                 // 07-07-2023 bValidPayment was not being set with result from checkPaymentType
                                 bValidPayment = checkPaymentType(edi850HeaderRecord.HeaderId, edi850HeaderRecord.SBOCardCode, edi850HeaderRecord.UserDefined03, autoImport);
                             }
@@ -2274,103 +2292,108 @@ namespace Infocus.WebApi.Common.Bone
                                                         _logger.Debug("Error setting U_COR_ImpSrc: " + oErrMsg);
                                                     }
                                                 }
-                                                // 09-08-2023 begin
-                                                try
-                                                {
-                                                    document.UserFields.Fields.Item("U_COR_SrcDoc").Value = "850";
-                                                }
-                                                catch (Exception c)
-                                                {
-                                                    string oErrMsg = c.Message;
-                                                    if (autoImport)
-                                                    {
-                                                        Import_Log.LogEntry("Error setting U_COR_SrcDoc: " + oErrMsg);
-                                                    }
-                                                    else
-                                                    {
-                                                        _logger.Debug("Error setting U_COR_SrcDoc: " + oErrMsg);
-                                                    }
-                                                }
-                                                // 09-08-2023 end
-                                                document.NumAtCard = edi850HeaderRecord.PurchaseOrderReference;
-                                                // 02-29-2024 begin
-                                                if (edi850HeaderRecord.PurchaseOrderDate != null && edi850HeaderRecord.PurchaseOrderDate.ToString().Trim().Length > 0)
-                                                {
+                                                // 03-24-2026 lrussell begin
+                                                // udf U_COR_SrcDoc not in database
+                                                /*
+                                                    // 09-08-2023 begin
                                                     try
                                                     {
-                                                        document.UserFields.Fields.Item("U_C3_PoDate").Value = edi850HeaderRecord.PurchaseOrderDate;
+                                                        document.UserFields.Fields.Item("U_COR_SrcDoc").Value = "850";
                                                     }
-                                                    catch (Exception pdt)
+                                                    catch (Exception c)
                                                     {
-                                                        string oErrMsg = pdt.Message;
+                                                        string oErrMsg = c.Message;
                                                         if (autoImport)
                                                         {
-                                                            Import_Log.LogEntry("Error setting PO Date: " + oErrMsg);
+                                                            Import_Log.LogEntry("Error setting U_COR_SrcDoc: " + oErrMsg);
                                                         }
                                                         else
                                                         {
-                                                            _logger.Debug("Error setting PO Date: " + oErrMsg);
+                                                            _logger.Debug("Error setting U_COR_SrcDoc: " + oErrMsg);
                                                         }
                                                     }
-                                                }
-                                                // 02-29-2024 end
-                                                // 03-02-2023 begin
-                                                if (edi850HeaderRecord.CardCode.StartsWith("TeeZed") && edi850HeaderRecord.ExpectedDeliveryDate.HasValue && edi850HeaderRecord.ExpectedDeliveryDate.Value > DateTime.MinValue)
-                                                {
-                                                    document.DocDueDate = edi850HeaderRecord.ExpectedDeliveryDate.Value;
-                                                }
-                                                else 
-                                                    // 03-02-2023 end
-                                                    if (edi850HeaderRecord.RequestedShipDate.HasValue && edi850HeaderRecord.RequestedShipDate.Value > DateTime.MinValue)
+                                                    // 09-08-2023 end
+                                                */
+                                                // 03-24-2026 lrussell end
+                                                    document.NumAtCard = edi850HeaderRecord.PurchaseOrderReference;
+                                                    // 02-29-2024 begin
+                                                    if (edi850HeaderRecord.PurchaseOrderDate != null && edi850HeaderRecord.PurchaseOrderDate.ToString().Trim().Length > 0)
                                                     {
-                                                        document.DocDueDate = edi850HeaderRecord.RequestedShipDate.Value;
-
+                                                        try
+                                                        {
+                                                            document.UserFields.Fields.Item("U_C3_PoDate").Value = edi850HeaderRecord.PurchaseOrderDate;
+                                                        }
+                                                        catch (Exception pdt)
+                                                        {
+                                                            string oErrMsg = pdt.Message;
+                                                            if (autoImport)
+                                                            {
+                                                                Import_Log.LogEntry("Error setting PO Date: " + oErrMsg);
+                                                            }
+                                                            else
+                                                            {
+                                                                _logger.Debug("Error setting PO Date: " + oErrMsg);
+                                                            }
+                                                        }
                                                     }
-                                                    else if (edi850HeaderRecord.RequestedDeliveryDate.HasValue && edi850HeaderRecord.RequestedDeliveryDate.Value > DateTime.MinValue)
+                                                    // 02-29-2024 end
+                                                    // 03-02-2023 begin
+                                                    if (edi850HeaderRecord.CardCode.StartsWith("TeeZed") && edi850HeaderRecord.ExpectedDeliveryDate.HasValue && edi850HeaderRecord.ExpectedDeliveryDate.Value > DateTime.MinValue)
                                                     {
-                                                        document.DocDueDate = edi850HeaderRecord.RequestedDeliveryDate.Value;
+                                                        document.DocDueDate = edi850HeaderRecord.ExpectedDeliveryDate.Value;
                                                     }
                                                     else
-                                                    {
-                                                        document.DocDueDate = DateTime.Today;
-                                                    }
+                                                        // 03-02-2023 end
+                                                        if (edi850HeaderRecord.RequestedShipDate.HasValue && edi850HeaderRecord.RequestedShipDate.Value > DateTime.MinValue)
+                                                        {
+                                                            document.DocDueDate = edi850HeaderRecord.RequestedShipDate.Value;
 
-                                                document.DocDate = DateTime.Today;
-                                                document.TaxDate = DateTime.Today;
-                                                // 12-14-2022 remove processing of expected delivery date field per Dan@Corsan
-                                                /*
-                                                  // 06-01-2021 begin
-                                                  if (oIs3PL == "Y")
-                                                  {
-                                                      if (autoImport)
-                                                      {
-                                                          Import_Log.LogEntry("3PL delivery date check");
-                                                      }
-                                                      else
-                                                      {
-                                                          _logger.Debug("3PL  delivery date check");
-                                                      }
-                                                      DateTime oToday = DateTime.Now;
-                                                      oToday = oToday.AddDays(Convert.ToDouble("-1"));
-                                                      if (edi850HeaderRecord.ExpectedDeliveryDate.HasValue && edi850HeaderRecord.ExpectedDeliveryDate.Value > DateTime.MinValue
-                                                          && edi850HeaderRecord.ExpectedDeliveryDate.Value > oToday)
-                                                      {
-                                                          document.DocDueDate = edi850HeaderRecord.ExpectedDeliveryDate.Value;
-                                                      }
-                                                      else
+                                                        }
+                                                        else if (edi850HeaderRecord.RequestedDeliveryDate.HasValue && edi850HeaderRecord.RequestedDeliveryDate.Value > DateTime.MinValue)
+                                                        {
+                                                            document.DocDueDate = edi850HeaderRecord.RequestedDeliveryDate.Value;
+                                                        }
+                                                        else
+                                                        {
+                                                            document.DocDueDate = DateTime.Today;
+                                                        }
+
+                                                    document.DocDate = DateTime.Today;
+                                                    document.TaxDate = DateTime.Today;
+                                                    // 12-14-2022 remove processing of expected delivery date field per Dan@Corsan
+                                                    /*
+                                                      // 06-01-2021 begin
+                                                      if (oIs3PL == "Y")
                                                       {
                                                           if (autoImport)
                                                           {
-                                                              Import_Log.LogEntry("3PL delivery date prior to current date; setting delivery date to current date");
+                                                              Import_Log.LogEntry("3PL delivery date check");
                                                           }
                                                           else
                                                           {
-                                                              _logger.Debug("3PL delivery date prior to current date; setting delivery date to current date");
+                                                              _logger.Debug("3PL  delivery date check");
+                                                          }
+                                                          DateTime oToday = DateTime.Now;
+                                                          oToday = oToday.AddDays(Convert.ToDouble("-1"));
+                                                          if (edi850HeaderRecord.ExpectedDeliveryDate.HasValue && edi850HeaderRecord.ExpectedDeliveryDate.Value > DateTime.MinValue
+                                                              && edi850HeaderRecord.ExpectedDeliveryDate.Value > oToday)
+                                                          {
+                                                              document.DocDueDate = edi850HeaderRecord.ExpectedDeliveryDate.Value;
+                                                          }
+                                                          else
+                                                          {
+                                                              if (autoImport)
+                                                              {
+                                                                  Import_Log.LogEntry("3PL delivery date prior to current date; setting delivery date to current date");
+                                                              }
+                                                              else
+                                                              {
+                                                                  _logger.Debug("3PL delivery date prior to current date; setting delivery date to current date");
+                                                              }
                                                           }
                                                       }
-                                                  }
-                                                  // 06-01-2021 end
-                                                  */
+                                                      // 06-01-2021 end
+                                                      */
                                                 // 09-16-2021 begin
                                                 if (!String.IsNullOrWhiteSpace(edi850HeaderRecord.BusinessRuleCd))
                                                 {
@@ -4875,7 +4898,7 @@ namespace Infocus.WebApi.Common.Bone
         //private String LookupItemCode(String cardCode, String pItemCode)
         private String LookupBuyerItemCode(int headerId, String cardCode, int lineNumber, String pBuyerItemCode)
 
-            // 10-24-2019 end
+        // 10-24-2019 end
         {
             Recordset rs = _company.GetBusinessObject(BoObjectTypes.BoRecordset) as Recordset;
             try
@@ -5349,7 +5372,8 @@ namespace Infocus.WebApi.Common.Bone
             finally
             {
                 System.Runtime.InteropServices.Marshal.ReleaseComObject(rs);
-            } return oNoMonths;
+            }
+            return oNoMonths;
         }
         // 09-09-2021 end
 
@@ -5547,12 +5571,12 @@ namespace Infocus.WebApi.Common.Bone
                 // 05-19-2021 begin
                 //String oCustQry = "select distinct coalesce(U_EDI_CHK_SERV_LEV,'N') as ChkServLev from OCRD t1 where CardCode  = '" + pB1CardCode.Trim() + "'";
                 String oCustQry =
-                    // 04-07-2022 begin
-                    /*              "select distinct coalesce(U_EDI_CHK_SERV_LEV,'N') as ChkServLev, coalesce([3PL],'N') Is3PL from OCRD t1 " +
-                                  "left join InfocusEdi.dbo.WebApiDbContext t2 on t2.SBOCardCode = t1.CardCode " + */
+                                  // 04-07-2022 begin
+                                  /*              "select distinct coalesce(U_EDI_CHK_SERV_LEV,'N') as ChkServLev, coalesce([3PL],'N') Is3PL from OCRD t1 " +
+                                                "left join InfocusEdi.dbo.WebApiDbContext t2 on t2.SBOCardCode = t1.CardCode " + */
                                   "select top 1 coalesce(U_EDI_CHK_SERV_LEV,'N') as ChkServLev, coalesce([3PL],'N') Is3PL from OCRD t1 With(NOLOCK) " +
                                    "join InfocusEdi.dbo.WebApiDbContext t2 With(NOLOCK) on t2.SBOCardCode COLLATE SQL_Latin1_General_CP850_CI_AS = t1.CardCode " +
-                    // 04-07-2022 end
+                                  // 04-07-2022 end
                                   "where t1.CardCode  = '" + pB1CardCode.Trim() + "' and  t2.CardCode = '" + pEdiCardCode.Trim() + "'";
                 // 05-19-2021 end
                 rs.DoQuery(oCustQry);
@@ -5817,7 +5841,12 @@ namespace Infocus.WebApi.Common.Bone
         {
             bool bValid = true;
             Recordset rs = _company.GetBusinessObject(BoObjectTypes.BoRecordset) as Recordset;
-
+            // 03-23-2026 lrussell begin
+            if (String.IsNullOrWhiteSpace(pPaymentType) || String.IsNullOrEmpty(pPaymentType))
+            {
+                pPaymentType = string.Empty;
+            }
+            // 03-23-2026 lrussell end
             string oAllowPP = "Y";
             try
             {

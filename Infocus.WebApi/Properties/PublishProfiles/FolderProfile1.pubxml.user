@@ -1,0 +1,428 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- https://go.microsoft.com/fwlink/?LinkID=208121. -->
+<Project>
+  <PropertyGroup>
+    <_PublishTargetUrl>C:\Anto\src\InfocusAPI\Infocus.WebApi\bin\app.publish\</_PublishTargetUrl>
+    <History>True|2026-03-23T18:47:21.7952391Z||;True|2026-03-19T15:31:53.7875927-04:00||;True|2026-02-14T12:16:10.6856066-05:00||;True|2026-02-14T06:09:59.2973067-05:00||;</History>
+    <LastFailureDetails />
+  </PropertyGroup>
+  <ItemGroup>
+    <File Include="App_Data/favicon.ico">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/HelpPage.css">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/Api.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/ApiGroup.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/CollectionModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/ComplexTypeModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/DictionaryModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/EnumTypeModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/HelpPageApiModel.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/ImageSample.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/InvalidSample.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/KeyValuePairModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/ModelDescriptionLink.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/Parameters.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/Samples.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/SimpleTypeModelDescription.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/DisplayTemplates/TextSample.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/Index.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Help/ResourceModel.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Shared/_Layout.cshtml">
+      <publishTime>03/17/2026 19:22:04</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/Web.config">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Areas/HelpPage/Views/_ViewStart.cshtml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="bin/Antlr3.Runtime.dll">
+      <publishTime>03/17/2026 19:22:09</publishTime>
+    </File>
+    <File Include="bin/Antlr3.Runtime.pdb">
+      <publishTime>03/17/2026 19:22:09</publishTime>
+    </File>
+    <File Include="bin/EntityFramework.dll">
+      <publishTime>03/17/2026 19:22:11</publishTime>
+    </File>
+    <File Include="bin/EntityFramework.SqlServer.dll">
+      <publishTime>03/17/2026 19:22:11</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Common.dll">
+      <publishTime>03/23/2026 14:47:15</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Common.dll.config">
+      <publishTime>03/17/2026 19:21:59</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Common.pdb">
+      <publishTime>03/23/2026 14:47:15</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Data.dll">
+      <publishTime>03/19/2026 15:31:47</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Data.dll.config">
+      <publishTime>03/17/2026 19:22:01</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.Data.pdb">
+      <publishTime>03/19/2026 15:31:47</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.dll">
+      <publishTime>03/23/2026 14:47:16</publishTime>
+    </File>
+    <File Include="bin/Infocus.WebApi.pdb">
+      <publishTime>03/23/2026 14:47:16</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.Core.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.EntityFramework.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/Microsoft.AspNet.Identity.Owin.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Host.SystemWeb.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.Cookies.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.Facebook.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.Google.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.MicrosoftAccount.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.OAuth.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Owin.Security.Twitter.dll">
+      <publishTime>03/17/2026 19:22:19</publishTime>
+    </File>
+    <File Include="bin/Microsoft.Web.Infrastructure.dll">
+      <publishTime>03/17/2026 19:22:20</publishTime>
+    </File>
+    <File Include="bin/Newtonsoft.Json.Bson.dll">
+      <publishTime>03/17/2026 19:22:22</publishTime>
+    </File>
+    <File Include="bin/Newtonsoft.Json.Bson.pdb">
+      <publishTime>03/17/2026 19:22:22</publishTime>
+    </File>
+    <File Include="bin/Newtonsoft.Json.dll">
+      <publishTime>03/17/2026 19:22:21</publishTime>
+    </File>
+    <File Include="bin/Owin.dll">
+      <publishTime>03/17/2026 19:22:22</publishTime>
+    </File>
+    <File Include="bin/System.Buffers.dll">
+      <publishTime>03/17/2026 19:22:23</publishTime>
+    </File>
+    <File Include="bin/System.Memory.dll">
+      <publishTime>03/17/2026 19:22:24</publishTime>
+    </File>
+    <File Include="bin/System.Net.Http.Formatting.dll">
+      <publishTime>03/17/2026 19:22:13</publishTime>
+    </File>
+    <File Include="bin/System.Runtime.CompilerServices.Unsafe.dll">
+      <publishTime>03/19/2026 06:46:56</publishTime>
+    </File>
+    <File Include="bin/System.Runtime.dll">
+      <publishTime>03/17/2026 19:22:24</publishTime>
+    </File>
+    <File Include="bin/System.Threading.Tasks.Extensions.dll">
+      <publishTime>03/17/2026 19:22:28</publishTime>
+    </File>
+    <File Include="bin/System.Web.Helpers.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.dll">
+      <publishTime>03/17/2026 19:22:13</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.Owin.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/System.Web.Http.WebHost.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/System.Web.Mvc.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/System.Web.Optimization.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/System.Web.Razor.dll">
+      <publishTime>03/17/2026 19:22:12</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Deployment.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/System.Web.WebPages.Razor.dll">
+      <publishTime>03/17/2026 19:22:14</publishTime>
+    </File>
+    <File Include="bin/WebApiConfiguration.xml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="bin/WebGrease.dll">
+      <publishTime>03/17/2026 19:22:28</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.rtl.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.rtl.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.rtl.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-grid.rtl.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.rtl.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.rtl.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.rtl.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-reboot.rtl.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.rtl.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.rtl.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.rtl.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap-utilities.rtl.min.css.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Content/bootstrap.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.rtl.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.rtl.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.rtl.min.css">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/bootstrap.rtl.min.css.map">
+      <publishTime>03/17/2026 19:22:07</publishTime>
+    </File>
+    <File Include="Content/Site.css">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Global.asax">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.bundle.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.bundle.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.bundle.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.bundle.min.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.esm.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.esm.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.esm.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.esm.min.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/bootstrap.min.js.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.min.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.slim.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.slim.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery-3.7.1.slim.min.map">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery.validate.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery.validate.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery.validate.unobtrusive.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/jquery.validate.unobtrusive.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/modernizr-2.8.3.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/respond.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/respond.matchmedia.addListener.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/respond.matchmedia.addListener.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/respond.min.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Scripts/_references.js">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Views/Home/Index.cshtml">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Views/Home/Process.cshtml">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Views/Shared/Error.cshtml">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Views/Shared/_Layout.cshtml">
+      <publishTime>03/19/2026 14:53:41</publishTime>
+    </File>
+    <File Include="Views/Web.config">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Views/_ViewStart.cshtml">
+      <publishTime>03/17/2026 19:22:08</publishTime>
+    </File>
+    <File Include="Web.config">
+      <publishTime>03/19/2026 15:31:51</publishTime>
+    </File>
+    <File Include="WebApiConfiguration.xml">
+      <publishTime>03/17/2026 19:22:03</publishTime>
+    </File>
+  </ItemGroup>
+</Project>

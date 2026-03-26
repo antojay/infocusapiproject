@@ -305,7 +305,7 @@ namespace Infocus.Framework.SapBone
                 // 01-22-2026 lar begin
                 if(dbType.Contains("2022"))
                 {
-                    company.DbServerType = BoDataServerTypes.dst_MSSQL2019;
+                    company.DbServerType = BoDataServerTypes.dst_MSSQL2022;
                 }
                 else if(dbType.Contains("2019"))
                 {

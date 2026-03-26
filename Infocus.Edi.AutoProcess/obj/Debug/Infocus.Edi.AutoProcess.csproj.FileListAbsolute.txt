@@ -1,0 +1,7 @@
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.csproj.AssemblyReference.cache
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Interop.SAPbobsCOM.dll
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.csproj.ResolveComReference.cache
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.DummyForm.resources
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.Properties.Resources.resources
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.csproj.GenerateResource.cache
+C:\Anto\src\InfocusAPI\Infocus.Edi.AutoProcess\obj\Debug\Infocus.Edi.AutoProcess.csproj.CoreCompileInputs.cache

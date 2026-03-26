@@ -313,7 +313,7 @@ where PermId like 'INF_%'
                     }
                     else if (configuration.Companies[0].DatabaseType.Contains("2017"))
                     {
-                        Company.DbServerType = BoDataServerTypes.dst_MSSQL2016;
+                        Company.DbServerType = BoDataServerTypes.dst_MSSQL2017;
                             
                     }
                     else if (configuration.Companies[0].DatabaseType.Contains("2016"))

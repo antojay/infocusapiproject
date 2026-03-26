@@ -43,6 +43,12 @@ where TrnspCode = {0}";
             {
                 BusinessOneRuntimeContext _instance = Infocus.WebApi.Common.Bone.BusinessOneRuntimeContext.Instance;
                 SAPbobsCOM.Company _Company = _instance.GetCompany();
+                // 03-17-2026 lrussell begin
+                if (_Company == null)
+                {
+                    throw new Exception("Unable to retrieve company from instance -- EdiController line 46");
+                }
+                // 03-17-2026 lrussell end
                 return _Company;
             }
             catch (Exception e)
@@ -4111,9 +4117,15 @@ where TrnspCode = {0}";
                                  */
                                 // 04-07-2022 end
                                 // 03-15-2022 end
-                                if (selectedRecord.IsError)
+                                if ((selectedRecord.IsError)
+                                    // 03-23-2026 lrussell begin
+                                    && !(selectedRecord.ErrorMessage.Contains("Object reference not set to an instance of an object"))
+                                    && selectedRecord.Delivery.DocEntry > 0 && !String.IsNullOrWhiteSpace(selectedRecord.Delivery.Canceled)
+                                    && !(selectedRecord.Delivery.Canceled == "Y")
+                                    )
+                                    // 03-23-2026 lrussell end
                                 {
-                                    recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;
+                                    recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;                                    
                                     recordToUpdate.Processed856 = false;
                                     recordToUpdate.HasOpen856 = true; // 08-06-2019
                                     selectedRecord.Delivery.U_InfoW2856 = "N"; // 10-28-2020
@@ -6394,6 +6406,7 @@ where TrnspCode = {0}";
             // 02-22-2022 begin
             string logMessage = "Entering Get855Records for " + request.CardCode + " : " + request.CardCode;
             // _logger.Debug("Entering Get855Records for " + request.CardCode);
+            _logger.Debug(logMessage); // 02-12-2006
             // 06-14-2024 begin
             string[] values = new string[] { "LOWES", "HOMEDEPOT", "TSC", "WAYFAIR" };
             List<string> BPList = new List<string>(values);
@@ -6570,7 +6583,7 @@ where TrnspCode = {0}";
                                     {
                                         oSendPreSo855 = "N";
                                     }
-                                };
+                                }
                             }
                         }
                         sqlConnection.Close();
@@ -6876,7 +6889,14 @@ where TrnspCode = {0}";
                                     {
                                         selectedRecord.Edi850HeaderRecord.Processed855DateTime = selectedRecord.Edi850HeaderRecord.ProcessedPreSo855DateTime;
                                     }
+                                    // 03-26-2025 end
+                            // 02-12-2026 lrussell restore missing code & correct closing bracket
+                            // begin
                                 }
+                            } 
+                            else
+                            { 
+                            // 02-12-2026 lrussell end
                                 // 03-11-2024 end
                                 if ((selectedRecord.Edi850HeaderRecord.CardCode.StartsWith("TSCCL") && selectedRecord.SOrder.U_InfoOrdStatus == "RD")
                                     || !(selectedRecord.Edi850HeaderRecord.CardCode.StartsWith("TSCCL")))
@@ -6887,7 +6907,8 @@ where TrnspCode = {0}";
                                       || selectedRecord.Edi850HeaderRecord.Orig855ProcessedDateTime > oLast855Date) // 02-25-2022
                                         && selectedRecord.SOrder.DocNum > 0) // 04-12-2018
                                     {  // 03-19-2018
-                                        //Edi855HeaderRecord record = new Edi855HeaderRecord();
+                                    // 02-12-2026 lrussell un-comment creation of new 855 header rec
+                                        Edi855HeaderRecord record = new Edi855HeaderRecord();
                                         record = new Edi855HeaderRecord();
                                         response.Edi855Records.Add(record);
 
@@ -7278,6 +7299,10 @@ where TrnspCode = {0}";
                                 } // 02-21-2019 end
                             } // 03-11-2024
                         }
+                        // 02-12-2026 lrussell remove extra brackets
+                        //     }
+                        //}
+                        // 02-12-2026 lrussell end
                         catch (Exception ex)
                         {
                             _logger.Error(ex);
@@ -11308,7 +11333,7 @@ where TrnspCode = {0}";
         {
             if (ConfigurationManager.ConnectionStrings[pConnectionName] == null)
             {
-                String msg = "No WebApiDbContext connection string found in Web.config";
+                String msg = $"No connection string found for the connection Name '{pConnectionName}' in Web.config";
                 _logger.Error(msg);
                 throw new WebApiException(msg);
             }

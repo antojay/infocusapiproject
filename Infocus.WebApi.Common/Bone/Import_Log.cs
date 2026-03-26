@@ -31,7 +31,14 @@ namespace Infocus.WebApi.Common.Bone
             string sEntry = null;
 
             sEntry = FmtLogTime() + " " + sInput;
-            Import_Log.oStreamWriter.WriteLine(sEntry);
+            try
+            {
+                Import_Log.oStreamWriter.WriteLine(sEntry);
+            }
+            catch (Exception l)
+            {
+                string oErrMesg = l.Message;
+            }
         }
 
         public static void CloseLog()

@@ -54,7 +54,7 @@ namespace Infocus.Edi.Bone
             RemoveMenus();
             Initialize();
         }
-        public override void OnLanguageChanged(SAPbouiCOM.BoLanguages language)
+        public override void OnLanguageChanged(BoLanguages language)
         {
             // ADD YOUR LANGUAGE CHANGE CODE HERE	...
         }

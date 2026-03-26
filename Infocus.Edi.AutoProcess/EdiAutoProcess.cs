@@ -10,13 +10,14 @@ using log4net;
 namespace Infocus.Edi.AutoProcess
 {
 
-    class InfocusEdiAutoProcess
+    public class InfocusEdiAutoProcess
     {
         public static SqlConnection oSqlConnection;
         public static string oServerName;
         public static string oDatabaseName;
         public static string oDbUser;
         public static string oDbPassword;
+        public static string oDbVersion; // 03-24-2026 lrusselkl
         public static Int32 oImpDelay; // 01-31-2023
         public static Int32 oMaxRows; // 08-08-2023
         public static Int32 oMaxTD; // 08-14-2023
@@ -27,20 +28,24 @@ namespace Infocus.Edi.AutoProcess
 
         // 2026-0115 lar begin change location of log files
         //public static string sLogPath = Environment.ExpandEnvironmentVariables("%ProgramData%\\Infocus\\EDI\\Logs\\Autoimport");
-        public static string sLogPath = Environment.ExpandEnvironmentVariables("\\trison-sql\\B1_SHR\\Infocus\\EDI\\Logs\\Autoimport");
+        // 03-23-2026 lrussell begin
+        // Issue wring logs to B1_SHR folder, switchong back to ProgramData folder on the server
+        //public static string sLogPath = Environment.ExpandEnvironmentVariables("\\trison-sql\\B1_SHR\\Infocus\\EDI\\Logs\\Autoimport");
+        public static string sLogPath = Environment.ExpandEnvironmentVariables("%ProgramData%\\Infocus\\EDI\\Logs\\Autoimport");
+        // 03-23-2026 lrussell end
         // 2026-0115 lar end
 
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main(string[] arg)
+        public static void Main(string[] arg)
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             // 07-24-2023 begin
             string orderSource = "850";
-           // arg = new string[] {"940"};
+            // arg = new string[] {"940"};
             if (arg.Length > 0)
             {
                 orderSource = arg[0];
@@ -59,7 +64,7 @@ namespace Infocus.Edi.AutoProcess
             */
             // 04-21-2022 end
             //Import_Log _Logger = new Import_Log(sLogPath);
-            Import_Log _logger = new Import_Log(sLogPath, orderSource.Trim() + "_AutoImport_" ); // 08-04-2023
+            Import_Log _logger = new Import_Log(sLogPath, orderSource.Trim() + "_AutoImport_"); // 08-04-2023
 
             // 07-24-2023 begin
             if (String.IsNullOrWhiteSpace(orderSource))
@@ -71,7 +76,7 @@ namespace Infocus.Edi.AutoProcess
             // 07-24-2023 end
 
             string[] oDBData = InfocusEdiAutoProcess.getDbInfo();
-            if (oDBData.Length >= 6)
+            if (oDBData.Length >= 7)
             {
                 string[] oValues = oDBData[0].Split('=');
                 oServerName = oValues[1];
@@ -85,6 +90,10 @@ namespace Infocus.Edi.AutoProcess
                 oSBO_User = oValues[1];
                 oValues = oDBData[5].Split('=');
                 oSBO_Pw = oValues[1];
+                // 03-24-2026 lrussell begin
+                oValues = oDBData[6].Split('=');
+                oDbVersion = oValues[1];
+                // 03-24-2026 lrussell end
             }
             Import_Log.LogEntry("Server: " + oServerName + ", SBO Database: " + oDatabaseName);
             InfocusEdiAutoProcess.oImpDelay = get850Delay(); // 01-31-2023
@@ -100,7 +109,8 @@ namespace Infocus.Edi.AutoProcess
             string oSqlString = "Server=" + oServerName + ";";
 
             oSqlString += "Database=" + oDatabaseName + ";";
-            oSqlString += "Trusted_Connection=true;";
+            // 03-24-2026 lrussell removed trusted
+            //oSqlString += "Trusted_Connection=true;";
             oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
 
             oSqlConnection.ConnectionString = oSqlString;
@@ -122,13 +132,13 @@ namespace Infocus.Edi.AutoProcess
 
         public static string[] getDbInfo()
         {
-            string[] oLines = new string[6];
+            string[] oLines = new string[7];
             int counter = 0;
             string oInputString;
             // Read lines one - three two of the file 
             string oFileName = sPath + @"\Properties.txt";
             System.IO.StreamReader oPropertiesFile = new System.IO.StreamReader(oFileName);
-            while ((oInputString = oPropertiesFile.ReadLine()) != null && counter < 6)
+            while ((oInputString = oPropertiesFile.ReadLine()) != null && counter < 7)
             {
                 oLines[counter] = oInputString;
                 counter++;
@@ -146,7 +156,8 @@ namespace Infocus.Edi.AutoProcess
                 SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
                 string oSqlString = "Server=" + oServerName + ";";
                 oSqlString += "Database=" + oDatabaseName + ";";
-                oSqlString += "Trusted_Connection=true;";
+                // 03-24-2026 lrussell removed trusted
+                //oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
                 oConnection.ConnectionString = oSqlString;
                 try
@@ -204,7 +215,8 @@ namespace Infocus.Edi.AutoProcess
                 SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
                 string oSqlString = "Server=" + oServerName + ";";
                 oSqlString += "Database=" + oDatabaseName + ";";
-                oSqlString += "Trusted_Connection=true;";
+                // 03-24-2026 lrussell removed trusted
+                //oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
                 oConnection.ConnectionString = oSqlString;
                 try
@@ -261,7 +273,8 @@ namespace Infocus.Edi.AutoProcess
                 SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
                 string oSqlString = "Server=" + oServerName + ";";
                 oSqlString += "Database=" + oDatabaseName + ";";
-                oSqlString += "Trusted_Connection=true;";
+                // 03-24-2026 lrussell removed trusted
+                //oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
                 oConnection.ConnectionString = oSqlString;
                 try
@@ -316,7 +329,8 @@ namespace Infocus.Edi.AutoProcess
                 SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
                 string oSqlString = "Server=" + oServerName + ";";
                 oSqlString += "Database=" + oDatabaseName + ";";
-                oSqlString += "Trusted_Connection=true;";
+                // 03-24-2026 lrussell removed trusted
+                //oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
 
                 oConnection.ConnectionString = oSqlString;
@@ -357,7 +371,8 @@ namespace Infocus.Edi.AutoProcess
                 SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
                 string oSqlString = "Server=" + oServerName + ";";
                 oSqlString += "Database=" + oDatabaseName + ";";
-                oSqlString += "Trusted_Connection=true;";
+                // 03-24-2026 lrussell removed trusted
+                //oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + oDbUser + ";Password=" + oDbPassword;
 
                 oConnection.ConnectionString = oSqlString;

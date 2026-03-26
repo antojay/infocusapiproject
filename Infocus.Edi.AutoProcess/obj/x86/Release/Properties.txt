@@ -1,0 +1,8 @@
+Server=TRISON-SQL
+Database=Corsan_Logistics_Live
+DbUser=sap_proxy
+DbPassword=Yi7cpN68Obsua_W3
+SBO_User=webuser
+SBO_Pw=4WqGYgmJ73U
+
+

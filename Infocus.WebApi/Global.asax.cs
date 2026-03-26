@@ -30,9 +30,15 @@ namespace Infocus.WebApi
             try
             {
                 BusinessOneRuntimeContext.Instance.InitializeRuntime();
-               // Infocus.WebApi.Common.Bone.BusinessOneCompany _company = ( Infocus.WebApi.Common.Bone.BusinessOneCompany) BusinessOneRuntimeContext.Instance.GetCompany(); 
-              SAPbobsCOM.Company _company = BusinessOneRuntimeContext.Instance.GetCompany(); // 08-04-2022
-      
+                // Infocus.WebApi.Common.Bone.BusinessOneCompany _company = ( Infocus.WebApi.Common.Bone.BusinessOneCompany) BusinessOneRuntimeContext.Instance.GetCompany(); 
+                SAPbobsCOM.Company _company = BusinessOneRuntimeContext.Instance.GetCompany(); // 08-04-2022
+                // 03-17-2026 lrussell begin
+                if (_company == null)
+                {
+                    throw new Exception("Unable to set company -- Global.asax line 34");
+                }
+                // 03-17-2026 lrussell end
+
             }
             // 07-22-2021 begin
             catch (HttpException ht)
@@ -78,7 +84,7 @@ namespace Infocus.WebApi
             if (ex is ThreadAbortException)
                 return;
             _logger.Error(ex);
-               _logger.Error("Source: " + ex.Source + " " + ex.StackTrace) ;
+            _logger.Error("Source: " + ex.Source + " " + ex.StackTrace);
             // 11-18-2022 begin
             if (!String.IsNullOrWhiteSpace(ex.InnerException.Message) && ex.InnerException.Message.Length > 0)
             {

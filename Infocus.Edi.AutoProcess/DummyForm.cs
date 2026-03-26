@@ -1,13 +1,14 @@
+using Infocus.WebApi.Common.Bone;
+using log4net;
+using SAPbobsCOM;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Drawing;
 using System.Text;
 using System.Windows.Forms;
-using log4net;
-using SAPbobsCOM;
-using Infocus.WebApi.Common.Bone;
 
 
 namespace Infocus.Edi.AutoProcess
@@ -31,7 +32,23 @@ namespace Infocus.Edi.AutoProcess
                         InfocusEdiAutoProcess.oCompany = new SAPbobsCOM.Company();
                         InfocusEdiAutoProcess.oCompany.CompanyDB = InfocusEdiAutoProcess.oDatabaseName;
                         InfocusEdiAutoProcess.oCompany.Server = InfocusEdiAutoProcess.oServerName;
-                        InfocusEdiAutoProcess.oCompany.DbServerType = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2016;
+                        // 03-24-2026 lrussell begin
+                        if (InfocusEdiAutoProcess.oDbVersion == "2022")
+                        {
+                            InfocusEdiAutoProcess.oCompany.DbServerType = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2022;
+                        }
+                        else if (InfocusEdiAutoProcess.oDbVersion == "2019")
+                        {
+                            InfocusEdiAutoProcess.oCompany.DbServerType = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2019;
+                        }
+                        else if (InfocusEdiAutoProcess.oDbVersion == "2017")
+                        {
+                            InfocusEdiAutoProcess.oCompany.DbServerType = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2017;
+                        }
+                        else
+                        { // 03-24-2026 lrussell end
+                            InfocusEdiAutoProcess.oCompany.DbServerType = SAPbobsCOM.BoDataServerTypes.dst_MSSQL2016;
+                        }
                         InfocusEdiAutoProcess.oCompany.UserName = InfocusEdiAutoProcess.oSBO_User;
                         InfocusEdiAutoProcess.oCompany.Password = InfocusEdiAutoProcess.oSBO_Pw;
                         InfocusEdiAutoProcess.oCompany.UseTrusted = false;
@@ -162,8 +179,12 @@ namespace Infocus.Edi.AutoProcess
             try
             {
                 System.Data.SqlClient.SqlConnection oConnection = new System.Data.SqlClient.SqlConnection();
-                String oSqlString = InfocusEdiAutoProcess.oSqlConnection.ConnectionString;
-                   
+                // 03-24-2026 lrussell begin
+                //String oSqlString = InfocusEdiAutoProcess.oSqlConnection.ConnectionString;
+                string oSqlString = "Server=" + InfocusEdiAutoProcess.oServerName + ";";
+                oSqlString += "Database=" + InfocusEdiAutoProcess.oDatabaseName + ";";
+                 oSqlString += "User Id= " + InfocusEdiAutoProcess.oDbUser + ";Password=" + InfocusEdiAutoProcess.oDbPassword;
+                // 03-24-2026 lrussell end 
 
                 oConnection.ConnectionString = oSqlString;
                 try
@@ -205,7 +226,12 @@ namespace Infocus.Edi.AutoProcess
                 oSqlString += "Database=" + oConnection.Database + ";";
                 oSqlString += "Trusted_Connection=true;";
                 oSqlString += "User Id= " + AppSettings.Instance.DatabaseUser + ";Password=" + AppSettings.Instance.DatabasePassword; */
-                String oSqlString = InfocusEdiAutoProcess.oSqlConnection.ConnectionString;
+                // String oSqlString = InfocusEdiAutoProcess.oSqlConnection.ConnectionString;
+                // 03-24-2026 lrussell begin
+                string oSqlString = "Server=" + InfocusEdiAutoProcess.oServerName + ";";
+                oSqlString += "Database=" + InfocusEdiAutoProcess.oDatabaseName + ";";
+                oSqlString += "User Id= " + InfocusEdiAutoProcess.oDbUser + ";Password=" + InfocusEdiAutoProcess.oDbPassword;
+                // 03-24-2026 lrussell end
                 oConnection.ConnectionString = oSqlString;
                 try
                 {
