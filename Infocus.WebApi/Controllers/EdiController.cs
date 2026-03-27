@@ -2,11 +2,13 @@
 using Infocus.WebApi.Common.Bone;
 using Infocus.WebApi.Data;
 using Infocus.WebApi.Data.Models;
-using SAPbobsCOM;
 using log4net;
+using SAPbobsCOM;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Data.Common;
+using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Net;
@@ -2209,16 +2211,16 @@ where TrnspCode = {0}";
                                 (x.Orig856ProcessedDateTime > oLast856Date // 02-25-2022
                                 && x.Orig856ProcessedDateTime < oCutoffDt)) // 04-08-2022
                                 && (x.HasOpen856 == true // 08-06-2019
-                                // || x.Processed856DateTime > oLast856Date) // 02-12-2022
+                                                         // || x.Processed856DateTime > oLast856Date) // 02-12-2022
                                 || x.Processed856 == false // 03-31-2022
-                                //    || (x.Processed856 == true && x.Orig856ProcessedDateTime > oLast856Date)) // 02-25-2022
+                                                           //    || (x.Processed856 == true && x.Orig856ProcessedDateTime > oLast856Date)) // 02-25-2022
                                 || (x.Processed856 == true && x.Orig856ProcessedDateTime > oLast856Date && x.Orig856ProcessedDateTime < oCutoffDt))// 04-08-2022
                                   && x.Processed == true
                                   && x.TrxPurpose != "01" //05-31-2017
                                   && x.CardCode == request.CardCode
                                   && (x.IgnoreTrxRequest != "Y") // 08-06-2022
-                                //&& x.CardCode == oSBOCardCode // 01-18-2017
-                                // && x.HeaderId >= 13537
+                                                                 //&& x.CardCode == oSBOCardCode // 01-18-2017
+                                                                 // && x.HeaderId >= 13537
                                   && (bSend855 == false || x.Processed855 == true) //08-31-2022
                                   && x.Deliveries.Count > 0
                                   && x.SalesOrderKey > 0).ToList();
@@ -2276,7 +2278,7 @@ where TrnspCode = {0}";
                                                     // 10-15-2019 begin
                                                     if (((String.IsNullOrWhiteSpace(delivery.U_Info_BOL) || delivery.U_Info_BOL.Trim().Length == 0)
                                                         && !(record.CardCode.StartsWith("TeeZed") && record.CarrierCode == "LBLS")) // 07-19-2021
-                                                        // 02-02-2023 begin
+                                                                                                                                    // 02-02-2023 begin
                                                         || (record.CardCode.StartsWith("Lowes2")) &&
                                                         (delivery.U_COR_ActShipDt == null || String.IsNullOrWhiteSpace(delivery.U_COR_ActShipDt.Value.ToString().Trim())))
                                                     // 02-02-2023 end
@@ -4123,9 +4125,9 @@ where TrnspCode = {0}";
                                     && selectedRecord.Delivery.DocEntry > 0 && !String.IsNullOrWhiteSpace(selectedRecord.Delivery.Canceled)
                                     && !(selectedRecord.Delivery.Canceled == "Y")
                                     )
-                                    // 03-23-2026 lrussell end
+                                // 03-23-2026 lrussell end
                                 {
-                                    recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;                                    
+                                    recordToUpdate.ErrorMessage = selectedRecord.ErrorMessage;
                                     recordToUpdate.Processed856 = false;
                                     recordToUpdate.HasOpen856 = true; // 08-06-2019
                                     selectedRecord.Delivery.U_InfoW2856 = "N"; // 10-28-2020
@@ -4690,7 +4692,7 @@ where TrnspCode = {0}";
             {
                 string oInvNo = null;
                 string oQuery = "select top 1 IsNull(t0.DocEntry,0) DocEntry from dbo.[Infocus_EDI_810_OINV]  t0 WITH (NOLOCK) " +
-                    //"where HeaderId = " + record.HeaderId + " and EDICardCode = '" + record.CardCode.Trim() + "'";
+                                        //"where HeaderId = " + record.HeaderId + " and EDICardCode = '" + record.CardCode.Trim() + "'";
                                         " where t0.EDICardCode = '" + record.CardCode.Trim() + "' and ( t0.HeaderId =  " + record.HeaderId +  // 10-03-2022
                                         " or t0.PurchaseOrderReference = '" + record.PurchaseOrderReference.Trim() + "')"; // 10-03-2022
                 try
@@ -5004,7 +5006,7 @@ where TrnspCode = {0}";
                                     && x.TrxPurpose != "01"
                                     //&& x.Processed870 == false
                                     && ((x.OrderType == "OS" || x.OrderType == "DR") && x.CardCode == "C001000") // 
-                                    //order types & cardcode for Lowe's
+                                                                                                                 //order types & cardcode for Lowe's
                                     && x.SalesOrderKey > 0).ToList();
                     _logger.Debug("There are " + listOf850Records.Count + " 870 records to evaluate");
                     foreach (var record in listOf850Records)
@@ -5539,36 +5541,80 @@ where TrnspCode = {0}";
                 {
                     oConnectionName = "WebApiDbContext";
                 }
-                //_logger.Debug("ConnectionName => " + oConnectionName);
+                _logger.Debug("ConnectionName => " + oConnectionName);
                 // set 753 flag from Sales Order
                 using (SqlConnection sqlConnection = new SqlConnection(GetConnectionString(oConnectionName)))
                 {
                     sqlConnection.Open();
                     // update 753 flag if status has changed
-                    string oQuery = "UPDATE InfocusEdi850HeaderRecord set Processed753=0 where HeaderId in " +
+                    // 03-26-2026 lrussell begin
+                    // add query to get count of records to update before trying to update Processed753 flag
+                    int numHdrsFound = 0;
+                    string oQuery1 = "SELECT COUNT(HeaderId) FROM InfocusEdi850HeaderRecord WITH(NOLOCK) where Processed753=0 and HeaderId in " +
                                     "(select HeaderId from dbo.[Info_EDI_753_Status_Changed] t0 where t0.CardCode = '" +
                                     request.CardCode.Trim() + "')";
                     try
                     {
-                        SqlCommand command = new SqlCommand(oQuery, sqlConnection);
-                        SqlTransaction sqlTrx = command.Transaction;
-
-                        /*using (SqlCommand command = new SqlCommand(oQuery, sqlConnection))
+                        SqlCommand command1 = new SqlCommand(oQuery1, sqlConnection);
+                        using (System.Data.SqlClient.SqlCommand command = new System.Data.SqlClient.SqlCommand(oQuery1, sqlConnection))
                         {
-                            command.ExecuteNonQuery();
-                        }*/
-                        command.ExecuteNonQuery();
-                        sqlTrx.Commit();
-                        sqlTrx.Dispose();
+                            using (System.Data.SqlClient.SqlDataReader reader = command.ExecuteReader())
+                            {
+                                if (!reader.Read())
+                                {
+                                    numHdrsFound = 0;
+                                }
+                                string svalue  = (String)reader[0];
+                                try
+                                {
+                                    numHdrsFound = Convert.ToInt32(svalue);
+
+                                }
+                                catch
+                                {
+                                    numHdrsFound = 0;
+                                }
+                            }
+                        }
                     }
-                    catch (Exception del2)
+                    catch
                     {
-                        _logger.Error("Error updating 753 status => " + del2.Message);
+
                     }
-                    finally
+                    if (numHdrsFound == 0)
                     {
+                        _logger.Debug(numHdrsFound.ToString() + " 753 records to update with new status");
                         sqlConnection.Close();
                     }
+                    else
+                    {
+                        _logger.Debug("There are " + numHdrsFound + " 753 records to update with new status");
+                        // 03-23-2026 lrussell end
+                        string oQuery = "UPDATE InfocusEdi850HeaderRecord set Processed753=0 where HeaderId in " +
+                                        "(select HeaderId from dbo.[Info_EDI_753_Status_Changed] t0 where t0.CardCode = '" +
+                                        request.CardCode.Trim() + "')";
+                        try
+                        {
+                            SqlCommand command = new SqlCommand(oQuery, sqlConnection);
+                            SqlTransaction sqlTrx = command.Transaction;
+
+                            /*using (SqlCommand command = new SqlCommand(oQuery, sqlConnection))
+                            {
+                                command.ExecuteNonQuery();
+                            }*/
+                            command.ExecuteNonQuery();
+                            sqlTrx.Commit();
+                            sqlTrx.Dispose();
+                        }
+                        catch (Exception del2)
+                        {
+                            _logger.Error("Error updating  753 status => " + del2.Message);
+                        }
+                        finally
+                        {
+                            sqlConnection.Close();
+                        }
+                    } // 03-23-2026 lrussell
                 }
                 using (WebApiDbContext dbContext = new WebApiDbContext(oConnectionName))
                 {
@@ -5608,6 +5654,9 @@ where TrnspCode = {0}";
                                 send753On = salesorder.DocDueDate.AddDays(Convert.ToDouble(-4));
                             }
                             // 06-03-2022 end
+                            // 03-26-2026 lrussell begin
+                            // remove check of U_ZSPS_SchedShpDt for send753On date
+                            /*
                             // 01-27-2023 begin
                             // if send753On < the current date use udf U_ZSPS_SchedShpDt
                             if (salesorder.U_ZSPS_SchedShpDt != null)
@@ -5623,13 +5672,26 @@ where TrnspCode = {0}";
                                 }
                             }
                             // 01-27-2023 end
+                            */
+                            // 03-26-2026 lrussell end  
+                            // 03-26-2026 lrussell begin
+                            // add check for send753On date on Saturday or Sunday and adjust to next Monday if so
+                            if (send753On.DayOfWeek == DayOfWeek.Saturday)
+                            {
+                                send753On = send753On.AddDays(Convert.ToDouble(2));
+                            }
+                            else if (send753On.DayOfWeek == DayOfWeek.Sunday)
+                            {
+                                send753On = send753On.AddDays(Convert.ToDouble(1));
+                            }
+                            // 03-26-2026 lrussell end
                             // 05-24-2022 begin
                             // if (oCurrDate >= send753On && oCurrDate < send753On.AddDays(Convert.ToDouble(1))
                             if (oCurrDate >= send753On // 05-24-2022 end
                                 && (String.IsNullOrWhiteSpace(salesorder.Canceled) || salesorder.Canceled == "N") // 06-03-2022
-                                // 01-27-2023 begin
-                                // remove requirement that sales order still be open
-                                // && salesorder.DocStatus == "O") // 06-18-2021
+                                  // 01-27-2023 begin
+                                  // remove requirement that sales order still be open
+                                  // && salesorder.DocStatus == "O") // 06-18-2021
                                 )
                             // 01-27-2023 end
                             {
@@ -5652,15 +5714,30 @@ where TrnspCode = {0}";
                                 dbContext.SaveChanges();
                             }
                         }
-
-                        if (salesorder != null && (record.Processed753 == false || salesorder.U_InfoW2753 != "Y") && send753 == true)
+                        // 03-26-2026 lrusssell added check for salesorder.DocNum
+                        if (salesorder != null && (record.Processed753 == false || salesorder.U_InfoW2753 != "Y") && send753 == true && salesorder.DocNum > 0)
                         {
                             // _logger.Debug("Found sales order with key " + salesorder.DocNum);
                             listToProcess.Add(new Edi850WithSalesOrder(record, salesorder));
                         }
                         else
                         {
-                            _logger.Error("Sales order lines not found for 850 record with key " + record.HeaderId);
+                            // 03-26-2026 lrussell begin -- add sales order number to error messages for easier troubleshooting
+                            //_logger.Error("Sales order lines not found for 850 record with key " + record.HeaderId);
+                            if (salesorder == null)
+                            {
+                                _logger.Error("No matching sales order found for 850 record with key " + record.HeaderId);
+                            }
+                            else if (salesorder.DocNum <= 0)
+                            {
+                                _logger.Error("Sales order number not found for 850 HeaderId " + record.HeaderId);
+                            }
+                            else
+                            {
+                                //_logger.Error("No lines found for Sales Order " + salesorder.DocNum.ToString(0 + " with 850 HeaderId " + record.HeaderId));
+                                _logger.Error("Error finding Sales Order " + salesorder.DocNum.ToString(0 + " with 850 HeaderId " + record.HeaderId));
+                            }
+                            // 03-26-2026 lrussell end
                         }
                     }
                 }
@@ -6036,6 +6113,10 @@ where TrnspCode = {0}";
                                                         detailRecord.ShipToLocationCode = oShipToLocation;
                                                     }
                                                     // 02-23-2023 end
+                                                    // 03-26-2026 lrussell begin
+                                                    // remove use of U_ZSPS_SchedShpDt when setting so line ready to ship date
+                                                    detailRecord.ReadyToShipDate = selectedRecord.SOrder.DocDueDate.ToLocalTime().ToString("yyyyMMdd");
+                                                    /*
                                                     // 02-02-2023 begin
                                                     if (selectedRecord.SOrder.U_ZSPS_SchedShpDt != null)
                                                     {
@@ -6047,6 +6128,9 @@ where TrnspCode = {0}";
                                                         // 02-02-2023 end
                                                         detailRecord.ReadyToShipDate = selectedRecord.SOrder.DocDueDate.ToLocalTime().ToString("yyyyMMdd");
                                                     } // 02-02-2023 
+                                                    */
+                                                    // 03-26-2026 lrussell end
+
                                                     detailRecord.PickUpTime = "0800";
 
                                                     try
@@ -6364,7 +6448,7 @@ where TrnspCode = {0}";
                                          where v.DocEntry == record.SalesOrderKey
                                              && (v.TreeType.Trim() == "N" || v.TreeType.Trim() == "S") // 01-18-2018
                                              && (record.Processed855 == false // 07-12-2021 send 855 if sales order is canceled & 855 has not been sent
-                                             // || record.Processed855DateTime > pLastRecTrxDT) // 02-22-2022
+                                                                              // || record.Processed855DateTime > pLastRecTrxDT) // 02-22-2022
                                               || record.Orig855ProcessedDateTime > pLastRecTrxDT // 02-25-2022
                                               || bSend855 == false) // 02-27-2022
                                          select v).FirstOrDefault();
@@ -6635,9 +6719,9 @@ where TrnspCode = {0}";
                                     x.CardCode == request.CardCode
                                    && x.TrxPurpose != "01"
                                    && (x.Processed855 == false // 04-12-2018
-                                        //|| x.Processed855DateTime > oLast855Date) // 02-22-2022
+                                                               //|| x.Processed855DateTime > oLast855Date) // 02-22-2022
                                    || x.Orig855ProcessedDateTime > oLast855Date) // 02-25-2022 )
-                                        //&& x.SalesOrderKey > 0 // 4-12-2018
+                                                                                 //&& x.SalesOrderKey > 0 // 4-12-2018
                                    && (x.CardCode == "LowesNet" // specify cardcode for Lowe's Net
                                    || x.CardCode.StartsWith("LowesNet") // 08-30-2019
                                    || x.CardCode == "Lowesnetest" // 07-13-2018
@@ -6645,7 +6729,7 @@ where TrnspCode = {0}";
                                    || x.CardCode.StartsWith("WAYFAIR") // 07-23-2019
                                    || process855 == true) // 1-11-2021 
                                    && (x.IgnoreTrxRequest != "Y") // 08-06-2022
-                                        // 03-11-2024 begin
+                                                                  // 03-11-2024 begin
                              && ((oSendPreSo855 == "Y" && oIs3PL == "Y" && ((x.SalesOrderKey <= 0 && x.Processed == false)
                              || (x.Processed == true && x.SalesOrderKey > 0 && x.NonSAPSO == "Y")) // 09-25-2024
                               || (x.SalesOrderKey > 0 && x.Processed == true)))).ToList();
@@ -6890,24 +6974,24 @@ where TrnspCode = {0}";
                                         selectedRecord.Edi850HeaderRecord.Processed855DateTime = selectedRecord.Edi850HeaderRecord.ProcessedPreSo855DateTime;
                                     }
                                     // 03-26-2025 end
-                            // 02-12-2026 lrussell restore missing code & correct closing bracket
-                            // begin
+                                    // 02-12-2026 lrussell restore missing code & correct closing bracket
+                                    // begin
                                 }
-                            } 
+                            }
                             else
-                            { 
-                            // 02-12-2026 lrussell end
+                            {
+                                // 02-12-2026 lrussell end
                                 // 03-11-2024 end
                                 if ((selectedRecord.Edi850HeaderRecord.CardCode.StartsWith("TSCCL") && selectedRecord.SOrder.U_InfoOrdStatus == "RD")
                                     || !(selectedRecord.Edi850HeaderRecord.CardCode.StartsWith("TSCCL")))
                                 {  // 02-21-2019
 
                                     if ((selectedRecord.SOrder.U_InfoOrdStatus != selectedRecord.Edi850HeaderRecord.Last855Status
-                                        //     || selectedRecord.Edi850HeaderRecord.Processed855DateTime > oLast855Date) // 02-22-2022
+                                      //     || selectedRecord.Edi850HeaderRecord.Processed855DateTime > oLast855Date) // 02-22-2022
                                       || selectedRecord.Edi850HeaderRecord.Orig855ProcessedDateTime > oLast855Date) // 02-25-2022
                                         && selectedRecord.SOrder.DocNum > 0) // 04-12-2018
                                     {  // 03-19-2018
-                                    // 02-12-2026 lrussell un-comment creation of new 855 header rec
+                                       // 02-12-2026 lrussell un-comment creation of new 855 header rec
                                         Edi855HeaderRecord record = new Edi855HeaderRecord();
                                         record = new Edi855HeaderRecord();
                                         response.Edi855Records.Add(record);
@@ -8156,14 +8240,14 @@ where TrnspCode = {0}";
                     {
                         sqlConnection.Open();
                         string oItmQuery = //"select coalesce((select top 1 VendorNumber from InfocusEdi850HeaderRecord where CardCode = '" +
-                            //request.CardCode.Trim() + "'),'') as VendorId," +
-                            // 01-14-2024 begin
-                            /*                "select IsNull(t0.DefaultVendor,'') as VendorId, " + // 04-07-2022
-                                            "t0.BuyerItemCode, t0.VendorItemCode, coalesce(t0.AltVendItem,'') AltVendItem, t0.PurchaserItem, t0.OnHand, t0.OnOrder, t0.Available," +
-                                            " t0.Commited, t0.Price, t0.ItemName, t0.CardName, t0.BarCode, t0.QtyQualifier, t0.NewItem, t0.Discontinued, t0.PoQty, t0.NextAvailDt, t0.UOM " +
-                                            "from Infocus_EDI_846 t0 WITH(NOLOCK) " +
-                                            " where t0.CardCode = '" + oSBOCardCode.Trim() + "'";
-                           */
+                                           //request.CardCode.Trim() + "'),'') as VendorId," +
+                                           // 01-14-2024 begin
+                        /*                "select IsNull(t0.DefaultVendor,'') as VendorId, " + // 04-07-2022
+                                        "t0.BuyerItemCode, t0.VendorItemCode, coalesce(t0.AltVendItem,'') AltVendItem, t0.PurchaserItem, t0.OnHand, t0.OnOrder, t0.Available," +
+                                        " t0.Commited, t0.Price, t0.ItemName, t0.CardName, t0.BarCode, t0.QtyQualifier, t0.NewItem, t0.Discontinued, t0.PoQty, t0.NextAvailDt, t0.UOM " +
+                                        "from Infocus_EDI_846 t0 WITH(NOLOCK) " +
+                                        " where t0.CardCode = '" + oSBOCardCode.Trim() + "'";
+                       */
                         "execute [Get_Infocus_EDI_846W] '" + oSBOCardCode.Trim() + "'";
                         // 01-14-2024 end
                         using (SqlCommand command = new SqlCommand(oItmQuery, sqlConnection))
@@ -8945,8 +9029,8 @@ where TrnspCode = {0}";
                             && x.TrxPurpose != "01" //05-31-2017
                             && x.CardCode == request.CardCode
                             && (x.IgnoreTrxRequest != "Y") // 08-06-2022             
-                            //&& x.CardCode == oSBOCardCode // 01-17-2018
-                            // && (x.HeaderId >= 28926 || request.CardCode == "ACET" || request.CardCode == "ACE" || request.CardCode == "C001000" || request.CardCode == "C001000T")
+                                                           //&& x.CardCode == oSBOCardCode // 01-17-2018
+                                                           // && (x.HeaderId >= 28926 || request.CardCode == "ACET" || request.CardCode == "ACE" || request.CardCode == "C001000" || request.CardCode == "C001000T")
                             && x.SalesOrderKey > 0).ToList();
                     _logger.Debug("There are " + listOf850Records.Count + " 810 records to process");
                     foreach (var record in listOf850Records)
@@ -8961,7 +9045,7 @@ where TrnspCode = {0}";
                             DateTime oProcessedDate = Convert.ToDateTime(oProcDate);
                             // 02-14-2023 end
                             if (invoice != null
-                                //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
+                                 //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
                                  && invoice.CreateDate >= oProcessedDate) // 02-14-2023 
                             {
                                 //_logger.Debug("Found 810 invoice from delivery with DocNum " + invoice.DocNum);
@@ -9034,7 +9118,7 @@ where TrnspCode = {0}";
                                     invoice = FindMatchingInvoiceByDel(dbContext, oConnectionName, record);
                                 } // 08-04-2022
                                 if (invoice != null
-                                    //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
+                                //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
                                 && invoice.CreateDate >= oProcessedDate) // 02-14-2023 
                                 {
                                     //_logger.Debug("Found 810 invoice from delivery with DocNum " + invoice.DocNum);
@@ -9062,7 +9146,7 @@ where TrnspCode = {0}";
                                 {
                                     invoice = FindMatchingInvoiceByDel(dbContext, oConnectionName, record);
                                     if (invoice != null
-                                        // && invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
+                                    // && invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
                                     && invoice.CreateDate >= oProcessedDate) // 02-14-2023 
                                     {
                                         // 07-28-2021begin
@@ -9090,7 +9174,7 @@ where TrnspCode = {0}";
                                         // 09-23-2019 begin
                                         invoice = FindMatchingInvoiceBySalesOrd(dbContext, oConnectionName, record);
                                         if (invoice != null
-                                            //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023              
+                                        //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023              
                                         && invoice.CreateDate >= oProcessedDate) // 02-14-2023 
                                         {
                                             // 07-28-2021begin
@@ -9125,7 +9209,7 @@ where TrnspCode = {0}";
                                 {
                                     invoice = FindMatchingInvoiceBySalesOrd(dbContext, oConnectionName, record);
                                     if (invoice != null
-                                        //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
+                                    //&& invoice.CreateDate >= record.ProcessedDateTime) // 02-02-2023
                                     && invoice.CreateDate >= oProcessedDate) // 02-14-2023 
                                     {
                                         // 07-28-2021begin
@@ -9433,7 +9517,8 @@ where TrnspCode = {0}";
                                      && (!String.IsNullOrWhiteSpace(selectedRecord.Invoice.TrackNo) && selectedRecord.Invoice.TrackNo.Trim().Length > 0))
                                 {
                                     selectedRecord.Invoice.U_Info_BOL = selectedRecord.Invoice.TrackNo.Trim();
-                                };
+                                }
+                                ;
                                 // 04-22-2021 end
                                 if ((!String.IsNullOrWhiteSpace(selectedRecord.Invoice.TrackNo) && selectedRecord.Invoice.TrackNo.Trim().Length > 0)
                                     && selectedRecord.Invoice.TrackNo.Trim().Length > selectedRecord.Invoice.U_Info_BOL.Length)

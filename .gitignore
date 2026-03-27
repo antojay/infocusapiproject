@@ -24,3 +24,5 @@
 /Infocus.WebApi.Data/bin/Release
 /Infocus.WebApi.Data/obj
 /packages
+[Bb]in/
+[Oo]bj/
